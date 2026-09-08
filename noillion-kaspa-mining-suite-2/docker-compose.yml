@@ -1,0 +1,57 @@
+version: "3.7"
+services:
+  app_proxy:
+    environment:
+      APP_HOST: noillion-kaspa-mining-suite-2_server_1
+      APP_PORT: 8080
+  server:
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app@sha256:ff395ecd12bcfb423a60ef777d57d9dac0e6e1bc5784fe21313fc11fb1aea026
+    user: "1000:1000"
+    restart: unless-stopped
+    stop_grace_period: 2m
+    environment:
+      SUITE_AUTH_REQUIRED: "false"
+      SUITE_PASSWORD: "${APP_PASSWORD}"
+      KASPAD_ADDRESS: noillion-kaspa-mining-suite-2_node_1:16110
+      NODE_LOG_DIR: /node-logs
+      STRATUM_PUBLIC_PORT: "${APP_KASPA_SUITE_STRATUM_PORT}"
+      UMBREL_HOST: "${APP_KASPA_SUITE_LAN_HOST}"
+    ports:
+      - "${APP_KASPA_SUITE_STRATUM_PORT}:5555"
+    volumes:
+      - ${APP_DATA_DIR}/data/suite:/data
+      - ${APP_DATA_DIR}/data/node-logs:/node-logs:ro
+    depends_on:
+      - node
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080/api/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+  node:
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app@sha256:ff395ecd12bcfb423a60ef777d57d9dac0e6e1bc5784fe21313fc11fb1aea026
+    user: "1000:1000"
+    restart: unless-stopped
+    stop_grace_period: 2m
+    command:
+      [
+        "kaspad",
+        "--appdir=/data",
+        "--logdir=/node-logs",
+        "--rpclisten=0.0.0.0:16110",
+        "--listen=0.0.0.0:16111",
+        "--utxoindex",
+        "--disable-upnp",
+      ]
+    ports:
+      - "16121:16111"
+    volumes:
+      - ${APP_DATA_DIR}/data/node:/data
+      - ${APP_DATA_DIR}/data/node-logs:/node-logs

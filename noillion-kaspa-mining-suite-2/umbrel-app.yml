@@ -1,0 +1,31 @@
+manifestVersion: 1.1
+id: noillion-kaspa-mining-suite-2
+name: Kaspa Mining Suite 2.0
+tagline: Your node, your miners, a live view of Kaspa
+icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
+category: crypto
+version: "0.2.0"
+port: 5560
+description: >-
+  Development preview with a dedicated Kaspa node, supervised official Stratum
+  bridge, durable mining ledger, worker telemetry and a live GhostDAG.
+  Uses Stratum port 55556 and separate data for side-by-side installation.
+  Physical Umbrel and IceRiver KS0 Ultra / KS7 Lite acceptance is pending.
+  A synchronized node is required before mining. Wallet keys never belong here.
+developer: NoillioN Labs
+website: https://github.com/NoillioN-Labs/umbrel-community-app-store
+repo: https://github.com/NoillioN-Labs/umbrel-community-app-store
+support: https://github.com/NoillioN-Labs/umbrel-community-app-store/issues
+submitter: NoillioN Labs
+submission: ""
+dependencies: []
+path: ""
+defaultUsername: ""
+deterministicPassword: true
+releaseNotes: >-
+  Sticky mobile navigation, sortable worker hashrate and contribution, a more
+  resilient compact live topology, and Analytics with exact node-resolved reward
+  totals and a detailed ledger. Official unmodified Kaspa icon. Existing ports
+  and data are retained. Back up the database before this reward-schema upgrade.
+  This preview retains password-free in-app access for Umbrel testing.
+gallery: []
