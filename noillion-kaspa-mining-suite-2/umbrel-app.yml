@@ -4,7 +4,7 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.2.0"
+version: "0.3.0"
 port: 5560
 description: >-
   Development preview with a dedicated Kaspa node, supervised official Stratum
