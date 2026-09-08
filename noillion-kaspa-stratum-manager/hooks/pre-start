@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${APP_DATA_DIR:?Umbrel must supply APP_DATA_DIR}"
-
 install -d -m 0750 -o 1000 -g 1000 "${APP_DATA_DIR}/data"
 chown -R 1000:1000 "${APP_DATA_DIR}/data"

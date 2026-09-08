@@ -10,6 +10,7 @@ services:
     restart: unless-stopped
     stop_grace_period: 2m
     environment:
+      # Password code is retained but disabled for this community preview.
       SUITE_AUTH_REQUIRED: "false"
       SUITE_PASSWORD: "${APP_PASSWORD}"
       KASPAD_ADDRESS: noillion-kaspa-mining-suite-2_node_1:16110

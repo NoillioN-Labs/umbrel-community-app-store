@@ -18,8 +18,7 @@ support: https://github.com/NoillioN-Labs/umbrel-community-app-store/issues
 port: 5556
 gallery: []
 releaseNotes: >-
-  Moves the Umbrel package into the unified NoillioN Labs community app store.
-  Runtime configuration, data storage, dependency, and published image are unchanged.
+  Minor bug fixes and improvements.
 path: ""
 defaultUsername: ""
 defaultPassword: ""

@@ -34,3 +34,8 @@ device details, and any other personal or sensitive data.
 
 This is an independent community app store and is not affiliated with or
 endorsed by Umbrel.
+
+Only the deployment files required by Umbrel are published here. Application
+source, builds, tests, logs, diagnostics, and private release artifacts remain
+outside this store. A restricted synchronization workflow copies only the
+approved runtime-file allowlist from the two package source repositories.

@@ -1,0 +1,127 @@
+name: Sync app packages
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+concurrency:
+  group: sync-app-packages
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the consolidated store
+        uses: actions/checkout@v6
+        with:
+          path: store
+
+      - name: Check out Kaspa Mining Suite 2.0 package source
+        uses: actions/checkout@v6
+        with:
+          repository: NoillioN-Labs/kaspa-mining-suit-2-community-app
+          path: mining-suite-source
+
+      - name: Check out Kaspa Solo Mining Console package source
+        uses: actions/checkout@v6
+        with:
+          repository: NoillioN-Labs/kaspa-stratum-manager-community-store
+          path: stratum-manager-source
+
+      - name: Copy the deployment allowlist
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          copy_package() {
+            source_dir="$1"
+            target_dir="$2"
+            install -d "$target_dir/hooks"
+            cp "$source_dir/docker-compose.yml" "$target_dir/docker-compose.yml"
+            cp "$source_dir/exports.sh" "$target_dir/exports.sh"
+            cp "$source_dir/icon.svg" "$target_dir/icon.svg"
+            cp "$source_dir/umbrel-app.yml" "$target_dir/umbrel-app.yml"
+            cp "$source_dir/hooks/pre-start" "$target_dir/hooks/pre-start"
+          }
+
+          copy_package \
+            mining-suite-source/noillion-kaspa-mining-suite-2 \
+            store/noillion-kaspa-mining-suite-2
+          copy_package \
+            stratum-manager-source/noillion-kaspa-stratum-manager \
+            store/noillion-kaspa-stratum-manager
+
+      - name: Enforce app identities and the exact public file allowlist
+        working-directory: store
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test "$(sed -n 's/^id: //p' umbrel-app-store.yml)" = "noillion"
+          for app in noillion-kaspa-mining-suite-2 noillion-kaspa-stratum-manager; do
+            test "$(sed -n 's/^id: //p' "$app/umbrel-app.yml")" = "$app"
+            grep -qx 'category: crypto' "$app/umbrel-app.yml"
+          done
+
+          expected_files=$(printf '%s\n' \
+            noillion-kaspa-mining-suite-2/docker-compose.yml \
+            noillion-kaspa-mining-suite-2/exports.sh \
+            noillion-kaspa-mining-suite-2/hooks/pre-start \
+            noillion-kaspa-mining-suite-2/icon.svg \
+            noillion-kaspa-mining-suite-2/umbrel-app.yml \
+            noillion-kaspa-stratum-manager/docker-compose.yml \
+            noillion-kaspa-stratum-manager/exports.sh \
+            noillion-kaspa-stratum-manager/hooks/pre-start \
+            noillion-kaspa-stratum-manager/icon.svg \
+            noillion-kaspa-stratum-manager/umbrel-app.yml | sort)
+          actual_files=$(find noillion-kaspa-mining-suite-2 noillion-kaspa-stratum-manager -type f | sort)
+          diff -u <(printf '%s\n' "$expected_files") <(printf '%s\n' "$actual_files")
+
+      - name: Block credentials and sensitive publication content
+        working-directory: store
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if grep -RIE \
+            '(-----BEGIN ([A-Z]+ )?PRIVATE KEY-----|api[_-]?key[[:space:]]*[:=][[:space:]]*[^$][^[:space:]]+|access[_-]?token[[:space:]]*[:=][[:space:]]*[^$][^[:space:]]+|secret[_-]?key[[:space:]]*[:=][[:space:]]*[^$][^[:space:]]+)' \
+            noillion-kaspa-mining-suite-2 noillion-kaspa-stratum-manager; then
+            echo "Potential credential or private key found in the publication candidate"
+            exit 1
+          fi
+
+          if grep -RIE \
+            '[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}' \
+            noillion-kaspa-mining-suite-2 noillion-kaspa-stratum-manager; then
+            echo "Email address found in the public app package"
+            exit 1
+          fi
+
+      - name: Publish changed packages
+        working-directory: store
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x \
+            noillion-kaspa-mining-suite-2/exports.sh \
+            noillion-kaspa-mining-suite-2/hooks/pre-start \
+            noillion-kaspa-stratum-manager/exports.sh \
+            noillion-kaspa-stratum-manager/hooks/pre-start
+
+          if git diff --quiet; then
+            echo "Packages are already current"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            noillion-kaspa-mining-suite-2 \
+            noillion-kaspa-stratum-manager
+          git commit -m "Sync deployment packages from source repositories"
+          git push
