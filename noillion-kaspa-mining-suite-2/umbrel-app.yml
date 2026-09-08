@@ -23,9 +23,9 @@ path: ""
 defaultUsername: ""
 deterministicPassword: true
 releaseNotes: >-
-  Sticky mobile navigation, sortable worker hashrate and contribution, a more
-  resilient compact live topology, and Analytics with exact node-resolved reward
-  totals and a detailed ledger. Official unmodified Kaspa icon. Existing ports
-  and data are retained. Back up the database before this reward-schema upgrade.
-  This preview retains password-free in-app access for Umbrel testing.
+  A visual Analytics dashboard with cumulative realised rewards, verified reward
+  composition, colour-coded DAG and block outcomes, a mining-outlook gauge,
+  reward event timeline, recent reward cards, and an on-demand full ledger.
+  Exact Sompi accounting and existing ports, data and password-free preview
+  access are retained.
 gallery: []
