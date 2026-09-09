@@ -2,7 +2,7 @@ manifestVersion: 1.1
 id: noillion-kaspa-stratum-manager
 category: crypto
 name: Kaspa Solo Mining Console
-version: "1.3.0"
+version: "1.4.0"
 tagline: Manage, monitor and understand Kaspa solo mining
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-stratum-manager/icon.svg
 description: >-
@@ -18,7 +18,7 @@ support: https://github.com/NoillioN-Labs/umbrel-community-app-store/issues
 port: 5556
 gallery: []
 releaseNotes: >-
-  Minor bug fixes and improvements.
+  New Mining Suite-inspired dashboard with visual Analytics, a complete reward ledger, live GhostDAG and Rusty Kaspad status, improved worker and log controls, safer settings and backup recovery, and reliability fixes.
 path: ""
 defaultUsername: ""
 defaultPassword: ""
