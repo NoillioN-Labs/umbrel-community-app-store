@@ -4,7 +4,7 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.3.0"
+version: "0.4.0"
 port: 5560
 description: >-
   Development preview with a dedicated Kaspa node, supervised official Stratum
@@ -20,12 +20,10 @@ submitter: NoillioN Labs
 submission: ""
 dependencies: []
 path: ""
-defaultUsername: ""
-deterministicPassword: true
 releaseNotes: >-
-  A visual Analytics dashboard with cumulative realised rewards, verified reward
-  composition, colour-coded DAG and block outcomes, a mining-outlook gauge,
-  reward event timeline, recent reward cards, and an on-demand full ledger.
-  Exact Sompi accounting and existing ports, data and password-free preview
-  access are retained.
+  Keeps the live Overview updating through malformed stream or API responses,
+  adds node, bridge and application health/version indicators, highlights key
+  hashrate and synchronization metrics, compares block totals with the previous
+  24 hours, improves block-found wording, and adds the validated development
+  support panel. The unused Umbrel credentials prompt has been removed.
 gallery: []
