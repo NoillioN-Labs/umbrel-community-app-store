@@ -5,7 +5,7 @@ services:
       APP_HOST: noillion-kaspa-mining-suite-2_server_1
       APP_PORT: 8080
   server:
-    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app@sha256:23c0fa582ba1d243b716ff8e79aa9ab0e3cf83294a573943ea8ae82575c99a93
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app@sha256:77207712ca19b2785380089482f66a576842f173490b5cc83bb0455ce49a2baa
     user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 2m
@@ -37,7 +37,7 @@ services:
       start_period: 30s
       retries: 3
   node:
-    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app@sha256:23c0fa582ba1d243b716ff8e79aa9ab0e3cf83294a573943ea8ae82575c99a93
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app@sha256:77207712ca19b2785380089482f66a576842f173490b5cc83bb0455ce49a2baa
     user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 2m
@@ -52,7 +52,7 @@ services:
         "--disable-upnp",
       ]
     ports:
-      - "16121:16111"
+      - "16111:16111"
     volumes:
       - ${APP_DATA_DIR}/data/node:/data
       - ${APP_DATA_DIR}/data/node-logs:/node-logs
