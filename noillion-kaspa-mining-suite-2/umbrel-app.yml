@@ -4,7 +4,7 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.6.0"
+version: "0.6.1"
 port: 5560
 description: >-
   Development preview with a dedicated Kaspa node, supervised official Stratum
@@ -21,8 +21,7 @@ submission: ""
 dependencies: []
 path: ""
 releaseNotes: >-
-  Adds connected-peer direction states, inline IBD identification, inbound and
-  outbound peer composition, and guidance for supporting the Kaspa network.
-  Reward history now plots verified components per discovered block, while the
-  mobile hashrate graph and range labels remain large and readable.
+  Fixes a live dashboard connection race that could restart the application and
+  briefly disconnect miners. Adds temporary verbose diagnostic capture and a
+  one-click, privacy-sanitized 48-hour troubleshooting package for testing.
 gallery: []
