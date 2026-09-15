@@ -49,3 +49,4 @@ If you use router forwarding, configure external TCP **16111 → your Umbrel dev
 The upgrade briefly restarts mining services. Existing node data, settings and ledger are retained, and miner Stratum stays on **55556**. If startup reports that port 16111 is already allocated or in use, stop the conflicting app and restart the suite. Do not delete existing data to resolve a port conflict.
 
 For rollback to 0.6.1, restore its image and host P2P mapping **16121 → 16111**, plus the matching router destination. Keep existing data volumes.
+

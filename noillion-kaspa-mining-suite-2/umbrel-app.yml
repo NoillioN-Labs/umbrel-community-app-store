@@ -4,12 +4,12 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.6.2"
+version: "0.6.3"
 port: 5560
 description: >-
   Development preview with a dedicated Kaspa node, supervised official Stratum
   bridge, durable mining ledger, worker telemetry and a live GhostDAG.
-  Uses Stratum port 55556 and standard Kaspa P2P port 16111.
+  Uses Stratum port 5556 and standard Kaspa P2P port 16111.
   Physical Umbrel and IceRiver KS0 Ultra / KS7 Lite acceptance is pending.
   A synchronized node is required before mining. Wallet keys never belong here.
 developer: NoillioN Labs
