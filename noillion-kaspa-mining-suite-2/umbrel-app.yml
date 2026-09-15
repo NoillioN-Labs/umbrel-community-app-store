@@ -35,9 +35,9 @@ releaseNotes: >-
   Miner Stratum now uses TCP 5556—update every miner pool address after upgrading.
 
 gallery:
-  - 1.png
-  - 2.png
-  - 3.png
-  - 4.png
-  - 5.png
+  - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/1.png
+  - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/2.png
+  - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/3.png
+  - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/4.png
+  - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/5.png
 
