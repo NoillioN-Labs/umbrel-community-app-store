@@ -4,7 +4,7 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.6.3"
+version: "0.6.4"
 port: 5560
 description: >-
   Turn your Umbrel into a complete Kaspa solo-mining command centre. Kaspa
@@ -26,13 +26,13 @@ submission: ""
 dependencies: []
 path: ""
 releaseNotes: >-
-  Version 0.6.3 focuses on clearer performance insight and simpler miner setup.
-  Worker fleet now shows a rolling 24-hour average and places Last Block Found
-  beside Current hashrate. Overview adds average hashrate and focused 1h, 6h,
-  24h and 7d ranges; Analytics adds 30d and 6m views plus five recent rewards
-  with effort. Peer versions are cleaner, Kaspa P2P uses standard TCP 16111,
-  and ASIC setup uses a familiar Pool Address / Wallet-Worker / Password layout.
-  Miner Stratum now uses TCP 5556—update every miner pool address after upgrading.
+  Version 0.6.4 improves Analytics readability and accessibility in both themes.
+  Reward subsidy, accepted fees and DAG merge values now use distinct semantic
+  colours selected for dark and light backgrounds. Blue and Red block outcomes
+  are shown in literal blue and red across charts, timelines and status chips,
+  while warning and effort colours remain readable in daylight and dark mode.
+  The application shell, official Kaspa branding, ports and mining behaviour are
+  unchanged.
 
 gallery:
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/1.png
