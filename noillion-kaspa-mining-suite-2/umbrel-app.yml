@@ -4,7 +4,7 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.6.6"
+version: "0.6.7"
 port: 5560
 description: >-
   Turn your Umbrel into a complete Kaspa solo-mining command centre. Kaspa
@@ -26,12 +26,13 @@ submission: ""
 dependencies: []
 path: ""
 releaseNotes: >-
-  Version 0.6.6 adds an optional daily Stratum Bridge restart schedule for
-  operators who power ASICs around solar-production hours. Choose a local time
-  and named time zone in Settings; daylight-saving changes are handled
-  automatically. At the scheduled minute, only the supervised bridge restarts
-  and is health-checked. The Kaspa node and dashboard remain running, historical
-  data is preserved, and the trigger and result are recorded in diagnostics.
+  Version 0.6.7 calculates hashrate from accepted share work over a rolling
+  five-minute window, preventing idle time from creating a misleading slow
+  ramp. Automatic Stratum recovery replaces the daily restart: a newly
+  connected miner that submits no shares for three minutes receives one
+  bridge-only recovery attempt with a 30-minute cooldown. Kaspad remains
+  running. This release also reduces duplicate disconnect logs, corrects event
+  severity and removes encoded connection payloads from diagnostic exports.
 
 gallery:
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/1.png
@@ -39,4 +40,3 @@ gallery:
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/3.png
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/4.png
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/5.png
-
