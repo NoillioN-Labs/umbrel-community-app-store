@@ -42,7 +42,7 @@ approved runtime-file allowlist from the two package source repositories.
 
 ## Kaspa Mining Suite 2.0 — current release
 
-Version **0.6.4** improves Analytics colours and light-theme readability. It does not change mining behaviour, stored data or network ports. The suite uses UI **5560**, miner Stratum **5556**, and Kaspa P2P **16111 → 16111**.
+Version **0.6.5** improves mobile use on iPhone and other touch devices. Analytics now stays within the screen at normal zoom, controls have reliable touch areas, and navigation and block-celebration controls respond to one tap. The celebration also includes a **Disable future pop-ups** option linked to the same preference in Settings. Application version reporting now comes directly from the packaged release and is checked before publication. Mining behaviour, stored data and network ports are unchanged. The suite uses UI **5560**, miner Stratum **5556**, and Kaspa P2P **16111 → 16111**.
 
 If upgrading from 0.6.2 or earlier, update every miner pool address to the Umbrel device on TCP **5556**. Before upgrading, stop any other app or service using TCP **16111**. The former **16121** P2P offset and **55556** Stratum port were temporary side-by-side testing allocations.
 
