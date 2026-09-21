@@ -7,11 +7,8 @@ services:
       APP_PORT: 5558
 
   server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: noillion-hash-power-pro:0.1.0
-    restart: unless-stopped
+    image: ghcr.io/noillion-labs/hash-power-pro:0.1.1@sha256:81e5d86bf4364753b9a5d0513717424c0d5bfbdfd78aab85bb7643e590fded04
+    restart: on-failure
     stop_grace_period: 30s
     environment:
       STRATUM_LISTEN_HOST: 0.0.0.0
