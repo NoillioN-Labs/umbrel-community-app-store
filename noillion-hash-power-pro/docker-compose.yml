@@ -7,7 +7,7 @@ services:
       APP_PORT: 5558
 
   server:
-    image: ghcr.io/noillion-labs/hash-power-pro:0.1.3
+    image: ghcr.io/noillion-labs/hash-power-pro:0.1.3@sha256:6091bd05b8e3a84795005810c6f21173c5bfabb5e6dfa8972c90f626c310982a
     restart: on-failure
     stop_grace_period: 30s
     environment:
