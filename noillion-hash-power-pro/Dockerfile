@@ -1,5 +1,9 @@
 FROM node:24-bookworm-slim
 
+LABEL org.opencontainers.image.source="https://github.com/NoillioN-Labs/umbrel-community-app-store"
+LABEL org.opencontainers.image.description="Hash Power Pro Umbrel Stratum routing gateway"
+LABEL org.opencontainers.image.licenses="MIT"
+
 ENV NODE_ENV=production
 WORKDIR /app
 
