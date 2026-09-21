@@ -1,0 +1,41 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: noillion-hash-power-pro_server_1
+      APP_PORT: 5558
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: noillion-hash-power-pro:0.1.0
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      STRATUM_LISTEN_HOST: 0.0.0.0
+      STRATUM_LISTEN_PORT: 5557
+      CONTROL_LISTEN_HOST: 0.0.0.0
+      CONTROL_LISTEN_PORT: 5558
+      CONTROL_TOKEN: "${APP_PASSWORD}"
+      OWNER_UPSTREAM_HOST: host.docker.internal
+      OWNER_UPSTREAM_PORT: 5556
+      RENTER_UPSTREAM_HOST: au.kaspa.herominers.com
+      RENTER_UPSTREAM_PORT: 1208
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${APP_HASH_POWER_PRO_STRATUM_PORT}:5557"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:5558/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3

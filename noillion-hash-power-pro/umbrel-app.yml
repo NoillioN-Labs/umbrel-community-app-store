@@ -1,0 +1,24 @@
+manifestVersion: 1.1
+id: noillion-hash-power-pro
+name: Hash Power Pro
+tagline: Safe local control for time-limited ASIC rentals
+icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
+category: crypto
+version: "0.1.0"
+port: 5570
+description: >-
+  Development proof of control for the Hash Power Pro ASIC rental gateway.
+  The app keeps the miner on a fixed LAN Stratum endpoint, routes to the
+  owner's Kaspa solo service by default, and permits a time-limited test route
+  to an approved public pool. It is not yet a commercial rental service.
+developer: NoillioN Labs
+website: https://github.com/NoillioN-Labs/Hash-Power-Pro
+repo: https://github.com/NoillioN-Labs/Hash-Power-Pro
+support: https://github.com/NoillioN-Labs/Hash-Power-Pro/issues
+submitter: NoillioN Labs
+submission: ""
+dependencies: []
+path: ""
+releaseNotes: >-
+  Initial development build with owner-route default, public endpoint policy,
+  in-memory renter credentials, bounded leases and emergency owner restore.
