@@ -4,7 +4,7 @@ name: Hash Power Pro
 tagline: Safe local control for time-limited ASIC rentals
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.1.1"
+version: "0.1.3"
 port: 5570
 description: >-
   Development proof of control for the Hash Power Pro ASIC rental gateway.
@@ -20,9 +20,8 @@ submission: ""
 dependencies: []
 path: ""
 releaseNotes: >-
-  Uses a public multi-architecture Hash Power Pro image pinned by digest for
-  reproducible Umbrel installation. Includes the owner-route default, public
-  endpoint policy, in-memory renter credentials, bounded leases and emergency
-  owner restore.
+  Adds KS7 Lite compatibility for pools that require a miner identity during
+  the Stratum subscription handshake. Preserves the owner-route default,
+  public endpoint policy, bounded leases and emergency owner restore.
 
 gallery: []
