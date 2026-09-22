@@ -4,7 +4,7 @@ name: Hash Power Pro Gateway
 tagline: Safe local control for time-limited ASIC rentals
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.1.6"
+version: "0.1.7"
 port: 5570
 description: >-
   Development proof of control for the Hash Power Pro ASIC rental gateway.
@@ -20,8 +20,9 @@ submission: ""
 dependencies: []
 path: ""
 releaseNotes: >-
-  Fixes Gateway startup after upgrading by preparing the persistent identity
-  directory with the non-root container user's ownership. The locally generated
-  Ed25519 identity remains private and persists across container upgrades.
+  Adds the signed first-miner readiness flow. The Gateway signs registration
+  challenges only while the miner is connected through the owner upstream.
+  Existing Gateway identity data remains private and persists across upgrades.
+  This update does not enable payments, listings, or physical route authority.
 
 gallery: []
