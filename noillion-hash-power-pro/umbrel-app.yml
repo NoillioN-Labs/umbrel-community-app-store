@@ -1,10 +1,10 @@
 manifestVersion: 1.1
 id: noillion-hash-power-pro
-name: Hash Power Pro
+name: Hash Power Pro Gateway
 tagline: Safe local control for time-limited ASIC rentals
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.1.3"
+version: "0.1.4"
 port: 5570
 description: >-
   Development proof of control for the Hash Power Pro ASIC rental gateway.
@@ -20,8 +20,8 @@ submission: ""
 dependencies: []
 path: ""
 releaseNotes: >-
-  Adds KS7 Lite compatibility for pools that require a miner identity during
-  the Stratum subscription handshake. Preserves the owner-route default,
-  public endpoint policy, bounded leases and emergency owner restore.
+  Renames the Umbrel app to Hash Power Pro Gateway to distinguish the owner's
+  local hardware control plane from the public Hash Power Pro marketplace.
+  The technical app ID remains unchanged so existing installations update in place.
 
 gallery: []
