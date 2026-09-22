@@ -19,3 +19,12 @@ export interface GatewayEvent {
   detail?: string;
 }
 
+export interface ObservedIcpLease {
+  rentalId: bigint;
+  minerId: string;
+  algorithm: "kheavyhash";
+  network: "kaspa";
+  poolEndpoint: string;
+  createdAtNs: bigint;
+  expiresAtNs: bigint;
+}

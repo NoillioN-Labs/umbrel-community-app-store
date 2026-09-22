@@ -55,4 +55,3 @@ export function rewriteClientLine(rawLine: string, route: GatewayRoute): Rewritt
     rewritten: true,
   };
 }
-

@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
     paths:
+      - "noillion-hash-power-pro/Dockerfile"
+      - "noillion-hash-power-pro/package.json"
+      - "noillion-hash-power-pro/package-lock.json"
+      - "noillion-hash-power-pro/src/**"
       - ".github/workflows/hash-power-pro-container.yml"
 
 permissions:
@@ -15,11 +19,8 @@ jobs:
   publish:
     runs-on: ubuntu-24.04
     steps:
-      - name: Check out tested Gateway source
+      - name: Check out app store
         uses: actions/checkout@v6
-        with:
-          repository: NoillioN-Labs/Hash-Power-Pro
-          ref: e9e1df1a9038032d19b2573d7e4f54527404460b
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -37,8 +38,7 @@ jobs:
       - name: Build and publish multi-architecture image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: apps/gateway/Dockerfile
+          context: ./noillion-hash-power-pro
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
