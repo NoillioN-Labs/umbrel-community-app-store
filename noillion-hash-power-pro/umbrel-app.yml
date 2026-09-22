@@ -4,7 +4,7 @@ name: Hash Power Pro Gateway
 tagline: Safe local control for time-limited ASIC rentals
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.1.4"
+version: "0.1.5"
 port: 5570
 description: >-
   Development proof of control for the Hash Power Pro ASIC rental gateway.
@@ -20,8 +20,8 @@ submission: ""
 dependencies: []
 path: ""
 releaseNotes: >-
-  Renames the Umbrel app to Hash Power Pro Gateway to distinguish the owner's
-  local hardware control plane from the public Hash Power Pro marketplace.
-  The technical app ID remains unchanged so existing installations update in place.
+  Adds revocable ICP Gateway pairing with a locally generated Ed25519 identity.
+  The private signing key remains on Umbrel and now persists under the app data
+  directory across container upgrades. Pairing grants no mining-route authority.
 
 gallery: []

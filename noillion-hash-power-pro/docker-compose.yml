@@ -7,7 +7,7 @@ services:
       APP_PORT: 5558
 
   server:
-    image: ghcr.io/noillion-labs/hash-power-pro:0.1.3@sha256:6091bd05b8e3a84795005810c6f21173c5bfabb5e6dfa8972c90f626c310982a
+    image: ghcr.io/noillion-labs/hash-power-pro:0.1.5@sha256:b642c31349f90fbf5fb1bca1c93f17e7471dd9bc68f9772d6396928eb19fae57
     restart: on-failure
     stop_grace_period: 30s
     environment:
@@ -16,6 +16,7 @@ services:
       CONTROL_LISTEN_HOST: 0.0.0.0
       CONTROL_LISTEN_PORT: 5558
       CONTROL_TOKEN: "${APP_PASSWORD}"
+      GATEWAY_IDENTITY_PATH: /data/gateway-identity.json
       OWNER_UPSTREAM_HOST: host.docker.internal
       OWNER_UPSTREAM_PORT: 5556
       RENTER_UPSTREAM_HOST: au.kaspa.herominers.com
@@ -24,6 +25,8 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "${APP_HASH_POWER_PRO_STRATUM_PORT}:5557"
+    volumes:
+      - "${APP_DATA_DIR}/data:/data"
     healthcheck:
       test:
         [
