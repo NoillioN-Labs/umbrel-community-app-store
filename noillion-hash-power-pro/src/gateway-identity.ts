@@ -20,7 +20,8 @@ export interface GatewayIdentityView {
   publicKeyBase64: string;
 }
 
-const CHALLENGE_PREFIX = "hash-power-pro:gateway-pairing:v1";
+const PAIRING_CHALLENGE_PREFIX = "hash-power-pro:gateway-pairing:v1";
+const MINER_CHALLENGE_PREFIX = "hash-power-pro:miner-registration:v1";
 const ED25519_SPKI_PREFIX_LENGTH = 12;
 
 function publicKeyBytes(privateKeyPem: string): Uint8Array {
@@ -32,18 +33,38 @@ function publicKeyBytes(privateKeyPem: string): Uint8Array {
   return der.subarray(ED25519_SPKI_PREFIX_LENGTH);
 }
 
-function validateChallenge(challenge: string, gatewayId: string): void {
+function validatePairingChallenge(challenge: string, gatewayId: string): void {
   if (challenge.length > 512) throw new Error("Pairing challenge is too large");
   const lines = challenge.split("\n");
   if (
     lines.length !== 5
-    || lines[0] !== CHALLENGE_PREFIX
+    || lines[0] !== PAIRING_CHALLENGE_PREFIX
     || !/^owner=[a-z0-9-]{5,64}$/.test(lines[1] ?? "")
     || lines[2] !== `gateway=${gatewayId}`
     || !/^nonce=[1-9][0-9]*$/.test(lines[3] ?? "")
     || !/^expires_at_ns=[1-9][0-9]*$/.test(lines[4] ?? "")
   ) {
     throw new Error("Pairing challenge is malformed or targets another Gateway");
+  }
+}
+
+function validateMinerRegistrationChallenge(challenge: string, gatewayId: string): void {
+  if (challenge.length > 1024) throw new Error("Miner registration challenge is too large");
+  const lines = challenge.split("\n");
+  if (
+    lines.length !== 10
+    || lines[0] !== MINER_CHALLENGE_PREFIX
+    || !/^owner=[a-z0-9-]{5,64}$/.test(lines[1] ?? "")
+    || lines[2] !== `gateway=${gatewayId}`
+    || lines[3] !== "miner=ks7-lite-01"
+    || !/^display_name=[\x20-\x7e]{2,80}$/.test(lines[4] ?? "")
+    || lines[5] !== "algorithm=kheavyhash"
+    || lines[6] !== "network=kaspa"
+    || lines[7] !== "nominal_hashrate_ghs=4200"
+    || !/^nonce=[1-9][0-9]*$/.test(lines[8] ?? "")
+    || !/^expires_at_ns=[1-9][0-9]*$/.test(lines[9] ?? "")
+  ) {
+    throw new Error("Miner registration challenge is malformed or targets another Gateway or miner specification");
   }
 }
 
@@ -89,7 +110,13 @@ export class GatewayIdentity {
   }
 
   signPairingChallenge(challenge: string): string {
-    validateChallenge(challenge, this.stored.gatewayId);
+    validatePairingChallenge(challenge, this.stored.gatewayId);
+    const signature = sign(null, Buffer.from(challenge, "utf8"), this.stored.privateKeyPem);
+    return signature.toString("base64");
+  }
+
+  signMinerRegistrationChallenge(challenge: string): string {
+    validateMinerRegistrationChallenge(challenge, this.stored.gatewayId);
     const signature = sign(null, Buffer.from(challenge, "utf8"), this.stored.privateKeyPem);
     return signature.toString("base64");
   }

@@ -11,6 +11,7 @@ export class StratumProxy {
   #activeRoute: GatewayRoute;
   #server?: Server;
   #connections = new Set<Socket>();
+  #readyConnections = new Set<string>();
   private readonly listenHost: string;
   private readonly listenPort: number;
   private readonly recordEvent: (event: GatewayEvent) => void;
@@ -35,6 +36,10 @@ export class StratumProxy {
     return this.#connections.size;
   }
 
+  readyMinerConnectionCount(): number {
+    return this.#readyConnections.size;
+  }
+
   async start(): Promise<void> {
     if (this.#server) throw new Error("Stratum proxy is already running");
     this.#server = createServer((downstream) => void this.#accept(downstream));
@@ -51,6 +56,7 @@ export class StratumProxy {
   async stop(): Promise<void> {
     for (const socket of this.#connections) socket.destroy();
     this.#connections.clear();
+    this.#readyConnections.clear();
     if (!this.#server) return;
     const server = this.#server;
     this.#server = undefined;
@@ -62,6 +68,7 @@ export class StratumProxy {
     this.#activeRoute = route;
     this.#event("route-selected", undefined, reason);
     if (changed) {
+      this.#readyConnections.clear();
       for (const socket of this.#connections) socket.destroy();
     }
   }
@@ -80,6 +87,7 @@ export class StratumProxy {
       let buffer = "";
 
       const closeBoth = () => {
+        this.#readyConnections.delete(connectionId);
         downstream.destroy();
         upstream.destroy();
         this.#connections.delete(downstream);
@@ -109,7 +117,10 @@ export class StratumProxy {
         this.#event("upstream-error", connectionId, error.message);
         closeBoth();
       });
-      upstream.once("connect", () => this.#event("upstream-connected", connectionId, `${route.host}:${route.port}`));
+      upstream.once("connect", () => {
+        this.#readyConnections.add(connectionId);
+        this.#event("upstream-connected", connectionId, `${route.host}:${route.port}`);
+      });
     } catch (error) {
       this.#event("route-rejected", connectionId, error instanceof Error ? error.message : "unknown error");
       downstream.destroy();

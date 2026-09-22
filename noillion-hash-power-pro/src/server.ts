@@ -5,6 +5,7 @@ import { loadConfig } from "./config.ts";
 import { GatewayIdentity } from "./gateway-identity.ts";
 import { IcpLeaseReader, LeaseObserver } from "./icp-lease-observer.ts";
 import { LeaseController } from "./lease-controller.ts";
+import { assertOwnerRouteReadiness } from "./miner-registration.ts";
 import { StratumProxy } from "./stratum-proxy.ts";
 import type { GatewayEvent } from "./types.ts";
 
@@ -68,13 +69,15 @@ const control = createServer(async (request, response) => {
 <h1>Hash Power Pro Gateway</h1>
 <section><p>Physical control plane status</p><pre id="status">Loading…</pre></section>
 <section><h2>Pair with ICP</h2><p>Copy this public identity into your private Owner console. Then paste the short-lived ICP challenge below. The private signing key never leaves this Gateway.</p><pre id="identity">Loading…</pre><textarea id="challenge" aria-label="ICP pairing challenge" placeholder="Paste the pairing challenge from Hash Power Pro"></textarea><p><button id="sign" type="button">Sign pairing challenge</button></p><pre id="proof"></pre></section>
-<script>const pairingToken=${JSON.stringify(pairingCsrfToken)};async function refresh(){const r=await fetch('./v1/status');document.querySelector('#status').textContent=JSON.stringify(await r.json(),null,2)}async function identity(){const r=await fetch('./v1/pairing-identity');document.querySelector('#identity').textContent=JSON.stringify(await r.json(),null,2)}document.querySelector('#sign').onclick=async()=>{const challenge=document.querySelector('#challenge').value;const r=await fetch('./v1/pairing-proof',{method:'POST',headers:{'content-type':'application/json','x-hpp-pairing-token':pairingToken},body:JSON.stringify({challenge})});document.querySelector('#proof').textContent=JSON.stringify(await r.json(),null,2)};refresh();identity();setInterval(refresh,5000)</script></html>`);
+<section><h2>Register a miner</h2><p>With the Gateway on the owner route and the miner connected to its owner upstream, paste the short-lived miner challenge. This proves local readiness only; it does not enable rentals or claim accepted shares.</p><textarea id="miner-challenge" aria-label="ICP miner registration challenge" placeholder="Paste the miner registration challenge from Hash Power Pro"></textarea><p><button id="sign-miner" type="button">Sign miner readiness proof</button></p><pre id="miner-proof"></pre></section>
+<script>const pairingToken=${JSON.stringify(pairingCsrfToken)};async function refresh(){const r=await fetch('./v1/status');document.querySelector('#status').textContent=JSON.stringify(await r.json(),null,2)}async function identity(){const r=await fetch('./v1/pairing-identity');document.querySelector('#identity').textContent=JSON.stringify(await r.json(),null,2)}async function signChallenge(path,input,output){const challenge=document.querySelector(input).value;const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json','x-hpp-pairing-token':pairingToken},body:JSON.stringify({challenge})});document.querySelector(output).textContent=JSON.stringify(await r.json(),null,2)}document.querySelector('#sign').onclick=()=>signChallenge('./v1/pairing-proof','#challenge','#proof');document.querySelector('#sign-miner').onclick=()=>signChallenge('./v1/miner-registration-proof','#miner-challenge','#miner-proof');refresh();identity();setInterval(refresh,5000)</script></html>`);
     }
     if (request.method === "GET" && request.url === "/v1/status") {
       return send(response, 200, {
         ...leases.status(),
         activeRouteId: proxy.routeId(),
         connections: proxy.connectionCount(),
+        readyMinerConnections: proxy.readyMinerConnectionCount(),
         icpLeaseObserver: leaseObserver?.status() ?? { mode: "disabled" },
         recentEvents: events.slice(-20),
       });
@@ -91,6 +94,19 @@ const control = createServer(async (request, response) => {
       return send(response, 200, {
         gatewayId: gatewayIdentity.view().gatewayId,
         signatureBase64: gatewayIdentity.signPairingChallenge(payload.challenge),
+      });
+    }
+    if (request.method === "POST" && request.url === "/v1/miner-registration-proof") {
+      if (request.headers["x-hpp-pairing-token"] !== pairingCsrfToken) {
+        return send(response, 403, { error: "miner_registration_request_not_from_gateway_ui" });
+      }
+      const payload = (await body(request)) as { challenge?: unknown };
+      if (typeof payload.challenge !== "string") throw new Error("A miner registration challenge is required");
+      assertOwnerRouteReadiness(proxy.routeId(), proxy.readyMinerConnectionCount());
+      return send(response, 200, {
+        gatewayId: gatewayIdentity.view().gatewayId,
+        signatureBase64: gatewayIdentity.signMinerRegistrationChallenge(payload.challenge),
+        attestation: "owner-route-upstream-connected",
       });
     }
     if (!authorised(request.headers.authorization)) {
