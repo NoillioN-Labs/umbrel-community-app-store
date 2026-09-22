@@ -8,6 +8,7 @@ services:
 
   server:
     image: ghcr.io/noillion-labs/hash-power-pro:0.1.5@sha256:b642c31349f90fbf5fb1bca1c93f17e7471dd9bc68f9772d6396928eb19fae57
+    user: "1000:1000"
     restart: on-failure
     stop_grace_period: 30s
     environment:
