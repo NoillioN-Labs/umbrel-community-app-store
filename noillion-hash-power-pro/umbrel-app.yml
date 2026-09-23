@@ -4,7 +4,7 @@ name: Hash Power Pro Gateway
 tagline: Safe local control for time-limited ASIC rentals
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.1.8"
+version: "0.1.9"
 port: 5570
 description: >-
   Development proof of control for the Hash Power Pro ASIC rental gateway.
@@ -20,10 +20,10 @@ submission: ""
 dependencies: []
 path: ""
 releaseNotes: >-
-  Adds the authenticated ICP lease claim and acknowledgement runtime, exact-expiry
-  route safety, and automatic Owner restoration after cancellation or expiry.
-  The Gateway now observes the mainnet control plane, while physical enforcement
-  remains disabled until the supervised route-switching proof is explicitly armed.
-  Existing Gateway identity data remains private and persists across upgrades.
+  Enables the authorised supervised route-switching proof with a one-shot local
+  approval gate. The Gateway remains on the Owner route until it observes a live
+  rental and the Umbrel operator presses Arm rental for that exact rental ID.
+  Approval cannot transfer to a later rental and is cleared after activation or
+  failure. Existing Gateway identity data remains private and persists across upgrades.
 
 gallery: []
