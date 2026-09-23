@@ -22,6 +22,8 @@ export interface GatewayIdentityView {
 
 const PAIRING_CHALLENGE_PREFIX = "hash-power-pro:gateway-pairing:v1";
 const MINER_CHALLENGE_PREFIX = "hash-power-pro:miner-registration:v1";
+const LEASE_CLAIM_CHALLENGE_PREFIX = "hash-power-pro:lease-claim:v1";
+const LEASE_ACK_CHALLENGE_PREFIX = "hash-power-pro:lease-ack:v1";
 const ED25519_SPKI_PREFIX_LENGTH = 12;
 
 function publicKeyBytes(privateKeyPem: string): Uint8Array {
@@ -65,6 +67,43 @@ function validateMinerRegistrationChallenge(challenge: string, gatewayId: string
     || !/^expires_at_ns=[1-9][0-9]*$/.test(lines[9] ?? "")
   ) {
     throw new Error("Miner registration challenge is malformed or targets another Gateway or miner specification");
+  }
+}
+
+function validateLeaseClaimChallenge(challenge: string, gatewayId: string): void {
+  if (challenge.length > 1024) throw new Error("Lease claim challenge is too large");
+  const lines = challenge.split("\n");
+  const endpoint = lines[6]?.slice("pool_endpoint=".length) ?? "";
+  if (
+    lines.length !== 9
+    || lines[0] !== LEASE_CLAIM_CHALLENGE_PREFIX
+    || lines[1] !== `gateway=${gatewayId}`
+    || lines[2] !== "miner=ks7-lite-01"
+    || !/^rental_id=[1-9][0-9]*$/.test(lines[3] ?? "")
+    || lines[4] !== "algorithm=kheavyhash"
+    || lines[5] !== "network=kaspa"
+    || !/^pool_endpoint=[^\s]{3,255}$/.test(lines[6] ?? "")
+    || endpoint.includes("://")
+    || !/^created_at_ns=[1-9][0-9]*$/.test(lines[7] ?? "")
+    || !/^expires_at_ns=[1-9][0-9]*$/.test(lines[8] ?? "")
+  ) {
+    throw new Error("Lease claim challenge is malformed or targets another Gateway or miner");
+  }
+}
+
+function validateLeaseAcknowledgementChallenge(challenge: string, gatewayId: string): void {
+  if (challenge.length > 512) throw new Error("Lease acknowledgement challenge is too large");
+  const lines = challenge.split("\n");
+  if (
+    lines.length !== 6
+    || lines[0] !== LEASE_ACK_CHALLENGE_PREFIX
+    || lines[1] !== `gateway=${gatewayId}`
+    || lines[2] !== "miner=ks7-lite-01"
+    || !/^rental_id=[1-9][0-9]*$/.test(lines[3] ?? "")
+    || !/^claim_nonce=[1-9][0-9]*$/.test(lines[4] ?? "")
+    || !/^expires_at_ns=[1-9][0-9]*$/.test(lines[5] ?? "")
+  ) {
+    throw new Error("Lease acknowledgement challenge is malformed or targets another Gateway or miner");
   }
 }
 
@@ -117,6 +156,18 @@ export class GatewayIdentity {
 
   signMinerRegistrationChallenge(challenge: string): string {
     validateMinerRegistrationChallenge(challenge, this.stored.gatewayId);
+    const signature = sign(null, Buffer.from(challenge, "utf8"), this.stored.privateKeyPem);
+    return signature.toString("base64");
+  }
+
+  signLeaseClaimChallenge(challenge: string): string {
+    validateLeaseClaimChallenge(challenge, this.stored.gatewayId);
+    const signature = sign(null, Buffer.from(challenge, "utf8"), this.stored.privateKeyPem);
+    return signature.toString("base64");
+  }
+
+  signLeaseAcknowledgementChallenge(challenge: string): string {
+    validateLeaseAcknowledgementChallenge(challenge, this.stored.gatewayId);
     const signature = sign(null, Buffer.from(challenge, "utf8"), this.stored.privateKeyPem);
     return signature.toString("base64");
   }

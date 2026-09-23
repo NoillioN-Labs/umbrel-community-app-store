@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 
 import { loadConfig } from "./config.ts";
 import { GatewayIdentity } from "./gateway-identity.ts";
+import { IcpLeaseAuthority, LeaseEnforcer } from "./icp-lease-enforcer.ts";
 import { IcpLeaseReader, LeaseObserver } from "./icp-lease-observer.ts";
 import { LeaseController } from "./lease-controller.ts";
 import { assertOwnerRouteReadiness } from "./miner-registration.ts";
@@ -19,21 +20,32 @@ const proxy = new StratumProxy(config.stratumHost, config.stratumPort, config.ow
   process.stdout.write(`${JSON.stringify(event)}\n`);
 });
 const leases = new LeaseController(proxy, config.ownerRoute);
-let leaseObserver: LeaseObserver | undefined;
+let leaseMonitor: LeaseObserver | LeaseEnforcer | undefined;
+
+await proxy.start();
 
 if (config.icpObserver) {
-  const reader = await IcpLeaseReader.create(config.icpObserver);
-  leaseObserver = new LeaseObserver(
-    reader,
-    config.icpObserver.minerId,
-    config.icpObserver.pollIntervalMs,
-    (event) => {
-      events.push(event);
-      if (events.length > 500) events.shift();
-      process.stdout.write(`${JSON.stringify(event)}\n`);
-    },
-  );
-  await leaseObserver.start();
+  const recordEvent = (event: GatewayEvent): void => {
+    events.push(event);
+    if (events.length > 500) events.shift();
+    process.stdout.write(`${JSON.stringify(event)}\n`);
+  };
+  leaseMonitor = config.icpObserver.enforcementEnabled
+    ? new LeaseEnforcer(
+        await IcpLeaseAuthority.create(config.icpObserver),
+        gatewayIdentity,
+        leases,
+        config.icpObserver.minerId,
+        config.icpObserver.pollIntervalMs,
+        recordEvent,
+      )
+    : new LeaseObserver(
+        await IcpLeaseReader.create(config.icpObserver),
+        config.icpObserver.minerId,
+        config.icpObserver.pollIntervalMs,
+        recordEvent,
+      );
+  await leaseMonitor.start();
 }
 
 function send(response: import("node:http").ServerResponse, status: number, value: unknown): void {
@@ -54,7 +66,6 @@ async function body(request: import("node:http").IncomingMessage): Promise<unkno
   return content ? JSON.parse(content) : {};
 }
 
-await proxy.start();
 const control = createServer(async (request, response) => {
   try {
     if (request.method === "GET" && request.url === "/health") {
@@ -78,7 +89,7 @@ const control = createServer(async (request, response) => {
         activeRouteId: proxy.routeId(),
         connections: proxy.connectionCount(),
         readyMinerConnections: proxy.readyMinerConnectionCount(),
-        icpLeaseObserver: leaseObserver?.status() ?? { mode: "disabled" },
+        icpLeaseObserver: leaseMonitor?.status() ?? { mode: "disabled" },
         recentEvents: events.slice(-20),
       });
     }
@@ -149,7 +160,7 @@ let shuttingDown = false;
 async function shutdown(): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
-  leaseObserver?.stop();
+  leaseMonitor?.stop();
   await leases.restore("gateway-shutdown");
   await new Promise<void>((resolve) => control.close(() => resolve()));
   await proxy.stop();
