@@ -7,7 +7,7 @@ services:
       APP_PORT: 5558
 
   server:
-    image: ghcr.io/noillion-labs/hash-power-pro:0.1.6@sha256:42675d9084724deaf49fc554122523323d534636eeed766fffe9e632c67b90ce
+    image: ghcr.io/noillion-labs/hash-power-pro:0.1.7@sha256:50bf0d6da84b946dd0ff8c8ba4103f8e4e3c7c04e4cdce150af3d1d825aec010
     user: "1000:1000"
     restart: on-failure
     stop_grace_period: 30s
@@ -22,6 +22,12 @@ services:
       OWNER_UPSTREAM_PORT: 5556
       RENTER_UPSTREAM_HOST: au.kaspa.herominers.com
       RENTER_UPSTREAM_PORT: 1208
+      ICP_LEASE_OBSERVER_ENABLED: "true"
+      ICP_LEASE_ENFORCEMENT_ENABLED: "false"
+      ICP_API_HOST: https://icp-api.io
+      ICP_BACKEND_CANISTER_ID: iwvrs-vyaaa-aaaac-qhffa-cai
+      ICP_MINER_ID: ks7-lite-01
+      ICP_POLL_INTERVAL_MS: 10000
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
