@@ -79,9 +79,10 @@ const control = createServer(async (request, response) => {
 <style>body{font:16px system-ui;max-width:760px;margin:48px auto;padding:0 20px;background:#0d1117;color:#e6edf3}section{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:24px;margin:16px 0}code{color:#7ee787}textarea{box-sizing:border-box;width:100%;min-height:150px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;padding:12px}button{padding:10px 16px}</style>
 <h1>Hash Power Pro Gateway</h1>
 <section><p>Physical control plane status</p><pre id="status">Loading…</pre></section>
+<section><h2>Supervised physical proof</h2><p>The Gateway stays on the Owner route until a live rental is observed and you arm that exact rental here. Arming can immediately disconnect and reconnect the miner to the approved renter pool.</p><p><button id="arm-lease" type="button" disabled>No rental awaiting approval</button></p><pre id="arm-result"></pre></section>
 <section><h2>Pair with ICP</h2><p>Copy this public identity into your private Owner console. Then paste the short-lived ICP challenge below. The private signing key never leaves this Gateway.</p><pre id="identity">Loading…</pre><textarea id="challenge" aria-label="ICP pairing challenge" placeholder="Paste the pairing challenge from Hash Power Pro"></textarea><p><button id="sign" type="button">Sign pairing challenge</button></p><pre id="proof"></pre></section>
 <section><h2>Register a miner</h2><p>With the Gateway on the owner route and the miner connected to its owner upstream, paste the short-lived miner challenge. This proves local readiness only; it does not enable rentals or claim accepted shares.</p><textarea id="miner-challenge" aria-label="ICP miner registration challenge" placeholder="Paste the miner registration challenge from Hash Power Pro"></textarea><p><button id="sign-miner" type="button">Sign miner readiness proof</button></p><pre id="miner-proof"></pre></section>
-<script>const pairingToken=${JSON.stringify(pairingCsrfToken)};async function refresh(){const r=await fetch('./v1/status');document.querySelector('#status').textContent=JSON.stringify(await r.json(),null,2)}async function identity(){const r=await fetch('./v1/pairing-identity');document.querySelector('#identity').textContent=JSON.stringify(await r.json(),null,2)}async function signChallenge(path,input,output){const challenge=document.querySelector(input).value;const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json','x-hpp-pairing-token':pairingToken},body:JSON.stringify({challenge})});document.querySelector(output).textContent=JSON.stringify(await r.json(),null,2)}document.querySelector('#sign').onclick=()=>signChallenge('./v1/pairing-proof','#challenge','#proof');document.querySelector('#sign-miner').onclick=()=>signChallenge('./v1/miner-registration-proof','#miner-challenge','#miner-proof');refresh();identity();setInterval(refresh,5000)</script></html>`);
+<script>const pairingToken=${JSON.stringify(pairingCsrfToken)};let gatewayStatus;async function refresh(){const r=await fetch('./v1/status');gatewayStatus=await r.json();document.querySelector('#status').textContent=JSON.stringify(gatewayStatus,null,2);const lease=gatewayStatus.icpLeaseObserver;const button=document.querySelector('#arm-lease');const ready=lease?.mode==='supervised'&&lease?.state==='awaiting-arm'&&gatewayStatus.routeId==='owner'&&gatewayStatus.readyMinerConnections>0;button.disabled=!ready;button.textContent=ready?'Arm rental '+lease.rentalId:'No rental awaiting approval'}async function identity(){const r=await fetch('./v1/pairing-identity');document.querySelector('#identity').textContent=JSON.stringify(await r.json(),null,2)}async function signChallenge(path,input,output){const challenge=document.querySelector(input).value;const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json','x-hpp-pairing-token':pairingToken},body:JSON.stringify({challenge})});document.querySelector(output).textContent=JSON.stringify(await r.json(),null,2)}document.querySelector('#sign').onclick=()=>signChallenge('./v1/pairing-proof','#challenge','#proof');document.querySelector('#sign-miner').onclick=()=>signChallenge('./v1/miner-registration-proof','#miner-challenge','#miner-proof');document.querySelector('#arm-lease').onclick=async()=>{const rentalId=gatewayStatus?.icpLeaseObserver?.rentalId;if(!rentalId)return;const r=await fetch('./v1/supervised-arm',{method:'POST',headers:{'content-type':'application/json','x-hpp-pairing-token':pairingToken},body:JSON.stringify({rentalId})});document.querySelector('#arm-result').textContent=JSON.stringify(await r.json(),null,2);await refresh()};refresh();identity();setInterval(refresh,5000)</script></html>`);
     }
     if (request.method === "GET" && request.url === "/v1/status") {
       return send(response, 200, {
@@ -119,6 +120,20 @@ const control = createServer(async (request, response) => {
         signatureBase64: gatewayIdentity.signMinerRegistrationChallenge(payload.challenge),
         attestation: "owner-route-upstream-connected",
       });
+    }
+    if (request.method === "POST" && request.url === "/v1/supervised-arm") {
+      if (request.headers["x-hpp-pairing-token"] !== pairingCsrfToken) {
+        return send(response, 403, { error: "supervised_arm_request_not_from_gateway_ui" });
+      }
+      if (!(leaseMonitor instanceof LeaseEnforcer)) {
+        return send(response, 409, { error: "supervised_enforcement_not_enabled" });
+      }
+      assertOwnerRouteReadiness(proxy.routeId(), proxy.readyMinerConnectionCount());
+      const payload = (await body(request)) as { rentalId?: unknown };
+      if (typeof payload.rentalId !== "string") throw new Error("An observed rental ID is required");
+      leaseMonitor.arm(payload.rentalId);
+      await leaseMonitor.pollOnce();
+      return send(response, 200, leaseMonitor.status());
     }
     if (!authorised(request.headers.authorization)) {
       return send(response, 401, { error: "unauthorised" });

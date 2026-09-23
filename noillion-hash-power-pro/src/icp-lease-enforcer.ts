@@ -32,7 +32,7 @@ export interface LeaseAuthority {
 
 export interface LeaseEnforcerStatus {
   mode: "supervised";
-  state: "starting" | "idle" | "activating" | "active" | "error";
+  state: "starting" | "idle" | "awaiting-arm" | "activating" | "active" | "error";
   lastCheckedAt?: string;
   rentalId?: string;
   expiresAt?: string;
@@ -211,6 +211,7 @@ export class LeaseEnforcer {
   #timer?: NodeJS.Timeout;
   #polling = false;
   #activeRentalId?: bigint;
+  #armedRentalId?: bigint;
   #status: LeaseEnforcerStatus = { mode: "supervised", state: "starting" };
   private readonly authority: LeaseAuthority;
   private readonly identity: GatewayIdentity;
@@ -245,6 +246,14 @@ export class LeaseEnforcer {
     return structuredClone(this.#status);
   }
 
+  arm(rentalId: string): void {
+    if (!/^[1-9][0-9]*$/.test(rentalId)) throw new Error("A valid observed rental ID is required");
+    if (this.#status.state !== "awaiting-arm" || this.#status.rentalId !== rentalId) {
+      throw new Error("The rental is not currently awaiting supervised approval");
+    }
+    this.#armedRentalId = BigInt(rentalId);
+  }
+
   async pollOnce(): Promise<void> {
     if (this.#polling) return;
     this.#polling = true;
@@ -272,6 +281,17 @@ export class LeaseEnforcer {
         this.#status = {
           mode: "supervised",
           state: "active",
+          lastCheckedAt: checkedAt.toISOString(),
+          rentalId: challenge.rentalId.toString(),
+          expiresAt: expiresAt.toISOString(),
+        };
+        return;
+      }
+      if (this.#armedRentalId !== challenge.rentalId) {
+        this.#armedRentalId = undefined;
+        this.#status = {
+          mode: "supervised",
+          state: "awaiting-arm",
           lastCheckedAt: checkedAt.toISOString(),
           rentalId: challenge.rentalId.toString(),
           expiresAt: expiresAt.toISOString(),
@@ -326,6 +346,7 @@ export class LeaseEnforcer {
         throw error;
       }
       this.#activeRentalId = claimed.rentalId;
+      this.#armedRentalId = undefined;
       this.#status = {
         mode: "supervised",
         state: "active",
@@ -340,6 +361,7 @@ export class LeaseEnforcer {
         detail: `rental=${claimed.rentalId};expires=${expiresAt.toISOString()}`,
       });
     } catch (error) {
+      this.#armedRentalId = undefined;
       const message = error instanceof Error ? error.message : "ICP lease enforcement failed";
       this.#status = {
         mode: "supervised",
