@@ -4,7 +4,7 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.6.7"
+version: "0.6.8"
 port: 5560
 description: >-
   Turn your Umbrel into a complete Kaspa solo-mining command centre. Kaspa
@@ -26,13 +26,12 @@ submission: ""
 dependencies: []
 path: ""
 releaseNotes: >-
-  Version 0.6.7 calculates hashrate from accepted share work over a rolling
-  five-minute window, preventing idle time from creating a misleading slow
-  ramp. Automatic Stratum recovery replaces the daily restart: a newly
-  connected miner that submits no shares for three minutes receives one
-  bridge-only recovery attempt with a 30-minute cooldown. Kaspad remains
-  running. This release also reduces duplicate disconnect logs, corrects event
-  severity and removes encoded connection payloads from diagnostic exports.
+  Version 0.6.8 upgrades both the Kaspa node and official Stratum Bridge to
+  Rusty Kaspa 2.1.0. The release adds P2P protocol 11 with backwards-compatible
+  chunked initial sync, stronger network and arithmetic safety checks, and
+  important bridge fixes for dashboard path traversal, lingering CLOSE_WAIT
+  sockets and unbounded mining metrics. The navigation footer now reports node
+  and bridge version 2.1.0 and application version 0.6.8.
 
 gallery:
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/1.png
