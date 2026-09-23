@@ -42,11 +42,11 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/noillion-labs/hash-power-pro:0.1.7
+            ghcr.io/noillion-labs/hash-power-pro:0.1.8
             ghcr.io/noillion-labs/hash-power-pro:latest
           labels: |
             org.opencontainers.image.source=https://github.com/NoillioN-Labs/Hash-Power-Pro
-            org.opencontainers.image.revision=eb940ea9414bdd90288c98f4622226e60de68111
-            org.opencontainers.image.version=0.1.7
+            org.opencontainers.image.revision=0ad975bb683a0221a169a7d4a3639569ef88a69d
+            org.opencontainers.image.version=0.1.8
           provenance: true
           sbom: true
