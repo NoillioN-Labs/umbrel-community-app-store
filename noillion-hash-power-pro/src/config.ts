@@ -15,6 +15,7 @@ export interface GatewayConfig {
     minerId: string;
     pollIntervalMs: number;
     rootKeyHex?: string;
+    enforcementEnabled: boolean;
   };
 }
 
@@ -50,6 +51,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig 
   }
 
   const observeIcp = enabled(env.ICP_LEASE_OBSERVER_ENABLED);
+  const enforceIcp = enabled(env.ICP_LEASE_ENFORCEMENT_ENABLED);
+  if (enforceIcp && !observeIcp) {
+    throw new Error("ICP_LEASE_OBSERVER_ENABLED must be true before lease enforcement can be enabled");
+  }
   const apiHost = env.ICP_API_HOST?.trim();
   const rootKeyHex = env.ICP_ROOT_KEY_HEX?.trim();
   if (observeIcp && apiHost?.startsWith("http://") && !rootKeyHex) {
@@ -85,6 +90,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig 
           minerId: env.ICP_MINER_ID?.trim() || "ks7-lite-01",
           pollIntervalMs: milliseconds(env.ICP_POLL_INTERVAL_MS, 10_000, "ICP_POLL_INTERVAL_MS"),
           rootKeyHex,
+          enforcementEnabled: enforceIcp,
         }
       : undefined,
   };
