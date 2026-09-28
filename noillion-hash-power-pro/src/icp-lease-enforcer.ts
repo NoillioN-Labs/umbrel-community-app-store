@@ -1,10 +1,11 @@
 import { Actor, HttpAgent } from "@icp-sdk/core/agent";
 import { IDL } from "@icp-sdk/core/candid";
+import { randomBytes } from "node:crypto";
 
 import { resolvePublicEndpoint } from "./endpoint-policy.ts";
-import type { GatewayIdentity } from "./gateway-identity.ts";
+import type { DeliveryReceiptSnapshot, GatewayIdentity } from "./gateway-identity.ts";
 import type { LeaseController } from "./lease-controller.ts";
-import type { GatewayEvent } from "./types.ts";
+import type { GatewayEvent, ShareMetrics } from "./types.ts";
 
 interface ClaimChallenge {
   rentalId: bigint;
@@ -28,6 +29,7 @@ export interface LeaseAuthority {
   observe(gatewayId: string, minerId: string): Promise<ClaimChallenge | undefined>;
   claim(challenge: ClaimChallenge, signatureBase64: string): Promise<ClaimedLease>;
   acknowledge(lease: ClaimedLease, signatureBase64: string): Promise<void>;
+  reportDelivery(snapshot: DeliveryReceiptSnapshot, gatewayId: string, signatureBase64: string): Promise<void>;
 }
 
 export interface LeaseEnforcerStatus {
@@ -53,6 +55,19 @@ const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     LeaseAlreadyClaimed: IDL.Null,
     LeaseNotClaimed: IDL.Null,
     LeaseAlreadyAcknowledged: IDL.Null,
+  });
+  const receiptError = IDL.Variant({
+    InvalidGatewayId: IDL.Null,
+    InvalidSignature: IDL.Null,
+    GatewayNotPaired: IDL.Null,
+    RentalNotFound: IDL.Null,
+    LeaseNotAcknowledged: IDL.Null,
+    InvalidSession: IDL.Null,
+    InvalidSequence: IDL.Null,
+    InvalidCounters: IDL.Null,
+    ReceiptWindowClosed: IDL.Null,
+    NotAuthorised: IDL.Null,
+    CapacityReached: IDL.Null,
   });
   const challenge = IDL.Record({
     rental_id: IDL.Nat64,
@@ -90,6 +105,35 @@ const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     acknowledge_gateway_lease: IDL.Func([
       IDL.Record({ rental_id: IDL.Nat64, gateway_id: IDL.Text, signature: IDL.Vec(IDL.Nat8) }),
     ], [IDL.Variant({ Ok: acknowledgement, Err: error })], []),
+    submit_delivery_receipt: IDL.Func([IDL.Record({
+      rental_id: IDL.Nat64,
+      gateway_id: IDL.Text,
+      miner_id: IDL.Text,
+      session_id: IDL.Text,
+      sequence: IDL.Nat64,
+      observed_at_ns: IDL.Nat64,
+      submitted: IDL.Nat64,
+      accepted: IDL.Nat64,
+      rejected: IDL.Nat64,
+      stale: IDL.Nat64,
+      signature: IDL.Vec(IDL.Nat8),
+    })], [IDL.Variant({ Ok: IDL.Record({
+      rental_id: IDL.Nat64,
+      gateway_id: IDL.Text,
+      miner_id: IDL.Text,
+      algorithm,
+      network,
+      submitted: IDL.Nat64,
+      accepted: IDL.Nat64,
+      rejected: IDL.Nat64,
+      stale: IDL.Nat64,
+      pending: IDL.Nat64,
+      acceptance_basis_points: IDL.Nat64,
+      last_observed_at_ns: IDL.Nat64,
+      recorded_at_ns: IDL.Nat64,
+      evidence_state: IDL.Variant({ Provisional: IDL.Null }),
+      settlement_eligible: IDL.Bool,
+    }), Err: receiptError })], []),
   });
 };
 
@@ -125,6 +169,19 @@ interface LeaseService {
   acknowledge_gateway_lease(request: {
     rental_id: bigint;
     gateway_id: string;
+    signature: Uint8Array;
+  }): Promise<WireResult<unknown>>;
+  submit_delivery_receipt(request: {
+    rental_id: bigint;
+    gateway_id: string;
+    miner_id: string;
+    session_id: string;
+    sequence: bigint;
+    observed_at_ns: bigint;
+    submitted: bigint;
+    accepted: bigint;
+    rejected: bigint;
+    stale: bigint;
     signature: Uint8Array;
   }): Promise<WireResult<unknown>>;
 }
@@ -195,6 +252,26 @@ export class IcpLeaseAuthority implements LeaseAuthority {
       signature: Uint8Array.from(Buffer.from(signatureBase64, "base64")),
     }));
   }
+
+  async reportDelivery(
+    snapshot: DeliveryReceiptSnapshot,
+    gatewayId: string,
+    signatureBase64: string,
+  ): Promise<void> {
+    resultValue(await this.service.submit_delivery_receipt({
+      rental_id: snapshot.rentalId,
+      gateway_id: gatewayId,
+      miner_id: snapshot.minerId,
+      session_id: snapshot.sessionId,
+      sequence: snapshot.sequence,
+      observed_at_ns: snapshot.observedAtNs,
+      submitted: snapshot.submitted,
+      accepted: snapshot.accepted,
+      rejected: snapshot.rejected,
+      stale: snapshot.stale,
+      signature: Uint8Array.from(Buffer.from(signatureBase64, "base64")),
+    }));
+  }
 }
 
 function splitEndpoint(endpoint: string): { host: string; port: number } {
@@ -212,6 +289,10 @@ export class LeaseEnforcer {
   #polling = false;
   #activeRentalId?: bigint;
   #armedRentalId?: bigint;
+  #deliverySessionId?: string;
+  #deliverySequence = 0n;
+  #lastReportedMetrics?: string;
+  #pendingReceipt?: DeliveryReceiptSnapshot;
   #status: LeaseEnforcerStatus = { mode: "supervised", state: "starting" };
   private readonly authority: LeaseAuthority;
   private readonly identity: GatewayIdentity;
@@ -221,6 +302,7 @@ export class LeaseEnforcer {
   private readonly event: (event: GatewayEvent) => void;
   private readonly now: () => Date;
   private readonly resolveEndpoint: (host: string) => Promise<string>;
+  private readonly metrics: () => ShareMetrics | undefined;
 
   constructor(
     authority: LeaseAuthority,
@@ -231,6 +313,7 @@ export class LeaseEnforcer {
     event: (event: GatewayEvent) => void,
     now: () => Date = () => new Date(),
     resolveEndpoint: (host: string) => Promise<string> = resolvePublicEndpoint,
+    metrics: () => ShareMetrics | undefined = () => undefined,
   ) {
     this.authority = authority;
     this.identity = identity;
@@ -240,6 +323,7 @@ export class LeaseEnforcer {
     this.event = event;
     this.now = now;
     this.resolveEndpoint = resolveEndpoint;
+    this.metrics = metrics;
   }
 
   status(): LeaseEnforcerStatus {
@@ -263,9 +347,12 @@ export class LeaseEnforcer {
       const challenge = await this.authority.observe(identity.gatewayId, this.minerId);
       if (!challenge) {
         if (this.#activeRentalId !== undefined) {
+          await this.#reportDelivery(checkedAt).catch((error) => this.#receiptError(checkedAt, error));
           await this.leases.restore("icp-lease-ended");
           this.event({ occurredAt: checkedAt.toISOString(), type: "icp-lease-restored-owner" });
           this.#activeRentalId = undefined;
+          this.#deliverySessionId = undefined;
+          this.#pendingReceipt = undefined;
         }
         this.#status = { mode: "supervised", state: "idle", lastCheckedAt: checkedAt.toISOString() };
         return;
@@ -278,6 +365,7 @@ export class LeaseEnforcer {
         throw new Error("ICP lease has less than 30 seconds remaining");
       }
       if (this.#activeRentalId === challenge.rentalId && this.leases.status().routeId === "renter") {
+        await this.#reportDelivery(checkedAt).catch((error) => this.#receiptError(checkedAt, error));
         this.#status = {
           mode: "supervised",
           state: "active",
@@ -346,6 +434,10 @@ export class LeaseEnforcer {
         throw error;
       }
       this.#activeRentalId = claimed.rentalId;
+      this.#deliverySessionId = randomBytes(16).toString("hex");
+      this.#deliverySequence = 0n;
+      this.#lastReportedMetrics = undefined;
+      this.#pendingReceipt = undefined;
       this.#armedRentalId = undefined;
       this.#status = {
         mode: "supervised",
@@ -383,5 +475,49 @@ export class LeaseEnforcer {
   stop(): void {
     if (this.#timer) clearInterval(this.#timer);
     this.#timer = undefined;
+  }
+
+  async #reportDelivery(observedAt: Date): Promise<void> {
+    if (this.#activeRentalId === undefined || !this.#deliverySessionId) return;
+    let snapshot = this.#pendingReceipt;
+    if (!snapshot) {
+      const metrics = this.metrics();
+      if (!metrics || metrics.routeId !== "renter" || metrics.submitted === 0) return;
+      const fingerprint = [metrics.submitted, metrics.accepted, metrics.rejected, metrics.stale].join(":");
+      if (fingerprint === this.#lastReportedMetrics) return;
+      snapshot = {
+        rentalId: this.#activeRentalId,
+        minerId: this.minerId,
+        sessionId: this.#deliverySessionId,
+        sequence: this.#deliverySequence + 1n,
+        observedAtNs: BigInt(observedAt.getTime()) * 1_000_000n,
+        submitted: BigInt(metrics.submitted),
+        accepted: BigInt(metrics.accepted),
+        rejected: BigInt(metrics.rejected),
+        stale: BigInt(metrics.stale),
+      };
+      this.#pendingReceipt = snapshot;
+    }
+    const gatewayId = this.identity.view().gatewayId;
+    const signature = this.identity.signDeliveryReceipt(snapshot);
+    await this.authority.reportDelivery(snapshot, gatewayId, signature);
+    this.#deliverySequence = snapshot.sequence;
+    this.#lastReportedMetrics = [snapshot.submitted, snapshot.accepted, snapshot.rejected, snapshot.stale].join(":");
+    this.#pendingReceipt = undefined;
+    this.event({
+      occurredAt: observedAt.toISOString(),
+      type: "delivery-receipt-recorded",
+      routeId: "renter",
+      detail: `rental=${snapshot.rentalId};accepted=${snapshot.accepted};rejected=${snapshot.rejected};stale=${snapshot.stale}`,
+    });
+  }
+
+  #receiptError(observedAt: Date, error: unknown): void {
+    this.event({
+      occurredAt: observedAt.toISOString(),
+      type: "delivery-receipt-error",
+      routeId: "renter",
+      detail: error instanceof Error ? error.message : "Delivery receipt submission failed",
+    });
   }
 }

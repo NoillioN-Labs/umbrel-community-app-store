@@ -19,6 +19,16 @@ export interface GatewayEvent {
   detail?: string;
 }
 
+export interface ShareMetrics {
+  routeId: GatewayRoute["id"];
+  sessionStartedAt: string;
+  submitted: number;
+  accepted: number;
+  rejected: number;
+  stale: number;
+  pending: number;
+}
+
 export interface ObservedIcpLease {
   rentalId: bigint;
   minerId: string;
