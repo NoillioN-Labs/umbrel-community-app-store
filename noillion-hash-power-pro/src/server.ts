@@ -38,6 +38,9 @@ if (config.icpObserver) {
         config.icpObserver.minerId,
         config.icpObserver.pollIntervalMs,
         recordEvent,
+        undefined,
+        undefined,
+        () => proxy.shareMetrics(),
       )
     : new LeaseObserver(
         await IcpLeaseReader.create(config.icpObserver),
@@ -90,6 +93,7 @@ const control = createServer(async (request, response) => {
         activeRouteId: proxy.routeId(),
         connections: proxy.connectionCount(),
         readyMinerConnections: proxy.readyMinerConnectionCount(),
+        shareMetrics: proxy.shareMetrics(),
         icpLeaseObserver: leaseMonitor?.status() ?? { mode: "disabled" },
         recentEvents: events.slice(-20),
       });

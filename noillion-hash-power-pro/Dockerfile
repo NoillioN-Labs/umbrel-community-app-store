@@ -8,6 +8,7 @@ ENV NODE_ENV=production
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+COPY protocol-adapters ./protocol-adapters
 RUN npm ci --omit=dev --ignore-scripts
 
 COPY src ./src

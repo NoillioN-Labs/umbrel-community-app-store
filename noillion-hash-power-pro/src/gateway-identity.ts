@@ -24,6 +24,7 @@ const PAIRING_CHALLENGE_PREFIX = "hash-power-pro:gateway-pairing:v1";
 const MINER_CHALLENGE_PREFIX = "hash-power-pro:miner-registration:v1";
 const LEASE_CLAIM_CHALLENGE_PREFIX = "hash-power-pro:lease-claim:v1";
 const LEASE_ACK_CHALLENGE_PREFIX = "hash-power-pro:lease-ack:v1";
+const DELIVERY_RECEIPT_CHALLENGE_PREFIX = "hash-power-pro:delivery-receipt:v1";
 const ED25519_SPKI_PREFIX_LENGTH = 12;
 
 function publicKeyBytes(privateKeyPem: string): Uint8Array {
@@ -107,6 +108,45 @@ function validateLeaseAcknowledgementChallenge(challenge: string, gatewayId: str
   }
 }
 
+export interface DeliveryReceiptSnapshot {
+  rentalId: bigint;
+  minerId: string;
+  sessionId: string;
+  sequence: bigint;
+  observedAtNs: bigint;
+  submitted: bigint;
+  accepted: bigint;
+  rejected: bigint;
+  stale: bigint;
+}
+
+export function deliveryReceiptChallenge(snapshot: DeliveryReceiptSnapshot, gatewayId: string): string {
+  if (
+    snapshot.rentalId < 1n
+    || snapshot.minerId !== "ks7-lite-01"
+    || !/^[a-f0-9]{32}$/.test(snapshot.sessionId)
+    || snapshot.sequence < 1n
+    || snapshot.observedAtNs < 1n
+    || [snapshot.submitted, snapshot.accepted, snapshot.rejected, snapshot.stale].some((value) => value < 0n)
+    || snapshot.accepted + snapshot.rejected + snapshot.stale > snapshot.submitted
+  ) {
+    throw new Error("Delivery receipt snapshot is malformed");
+  }
+  return [
+    DELIVERY_RECEIPT_CHALLENGE_PREFIX,
+    `gateway=${gatewayId}`,
+    `miner=${snapshot.minerId}`,
+    `rental_id=${snapshot.rentalId}`,
+    `session_id=${snapshot.sessionId}`,
+    `sequence=${snapshot.sequence}`,
+    `observed_at_ns=${snapshot.observedAtNs}`,
+    `submitted=${snapshot.submitted}`,
+    `accepted=${snapshot.accepted}`,
+    `rejected=${snapshot.rejected}`,
+    `stale=${snapshot.stale}`,
+  ].join("\n");
+}
+
 export class GatewayIdentity {
   private readonly stored: StoredGatewayIdentity;
   private readonly publicKey: Uint8Array;
@@ -168,6 +208,13 @@ export class GatewayIdentity {
 
   signLeaseAcknowledgementChallenge(challenge: string): string {
     validateLeaseAcknowledgementChallenge(challenge, this.stored.gatewayId);
+    const signature = sign(null, Buffer.from(challenge, "utf8"), this.stored.privateKeyPem);
+    return signature.toString("base64");
+  }
+
+
+  signDeliveryReceipt(snapshot: DeliveryReceiptSnapshot): string {
+    const challenge = deliveryReceiptChallenge(snapshot, this.stored.gatewayId);
     const signature = sign(null, Buffer.from(challenge, "utf8"), this.stored.privateKeyPem);
     return signature.toString("base64");
   }

@@ -8,6 +8,7 @@ on:
       - "noillion-hash-power-pro/Dockerfile"
       - "noillion-hash-power-pro/package.json"
       - "noillion-hash-power-pro/package-lock.json"
+      - "noillion-hash-power-pro/protocol-adapters/**"
       - "noillion-hash-power-pro/src/**"
       - ".github/workflows/hash-power-pro-container.yml"
 
@@ -42,11 +43,11 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/noillion-labs/hash-power-pro:0.1.8
+            ghcr.io/noillion-labs/hash-power-pro:0.1.9
             ghcr.io/noillion-labs/hash-power-pro:latest
           labels: |
             org.opencontainers.image.source=https://github.com/NoillioN-Labs/Hash-Power-Pro
-            org.opencontainers.image.revision=0ad975bb683a0221a169a7d4a3639569ef88a69d
-            org.opencontainers.image.version=0.1.8
+            org.opencontainers.image.revision=5f729e9b17bbfd76783cb41aee22c72bea63cba3
+            org.opencontainers.image.version=0.1.9
           provenance: true
           sbom: true

@@ -1,9 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { createServer, createConnection, type Server, type Socket } from "node:net";
 
+import {
+  classifyKheavyhashSubmitResponse,
+  parseKheavyhashSubmitRequest,
+} from "@hash-power-pro/protocol-adapters";
+
 import { resolvePublicEndpoint } from "./endpoint-policy.ts";
 import { rewriteClientLine } from "./stratum-message.ts";
-import type { GatewayEvent, GatewayRoute } from "./types.ts";
+import type { GatewayEvent, GatewayRoute, ShareMetrics } from "./types.ts";
 
 const MAX_LINE_BYTES = 1024 * 1024;
 
@@ -12,6 +17,7 @@ export class StratumProxy {
   #server?: Server;
   #connections = new Set<Socket>();
   #readyConnections = new Set<string>();
+  #metrics: ShareMetrics;
   private readonly listenHost: string;
   private readonly listenPort: number;
   private readonly recordEvent: (event: GatewayEvent) => void;
@@ -26,6 +32,7 @@ export class StratumProxy {
     this.listenPort = listenPort;
     this.recordEvent = recordEvent;
     this.#activeRoute = ownerRoute;
+    this.#metrics = this.#newMetrics(ownerRoute.id);
   }
 
   routeId(): GatewayRoute["id"] {
@@ -38,6 +45,10 @@ export class StratumProxy {
 
   readyMinerConnectionCount(): number {
     return this.#readyConnections.size;
+  }
+
+  shareMetrics(): ShareMetrics {
+    return structuredClone(this.#metrics);
   }
 
   async start(): Promise<void> {
@@ -64,8 +75,14 @@ export class StratumProxy {
   }
 
   async switchRoute(route: GatewayRoute, reason: string): Promise<void> {
-    const changed = this.#activeRoute.id !== route.id;
+    const changed = this.#activeRoute.id !== route.id
+      || this.#activeRoute.host !== route.host
+      || this.#activeRoute.port !== route.port
+      || this.#activeRoute.credentials?.username !== route.credentials?.username;
     this.#activeRoute = route;
+    if (changed) {
+      this.#metrics = this.#newMetrics(route.id);
+    }
     this.#event("route-selected", undefined, reason);
     if (changed) {
       this.#readyConnections.clear();
@@ -75,6 +92,7 @@ export class StratumProxy {
 
   async #accept(downstream: Socket): Promise<void> {
     const route = this.#activeRoute;
+    const metrics = this.#metrics;
     const connectionId = randomUUID();
     this.#connections.add(downstream);
     this.#event("miner-connected", connectionId);
@@ -84,9 +102,13 @@ export class StratumProxy {
       if (downstream.destroyed) return;
       const upstream = createConnection({ host, port: route.port });
       this.#connections.add(upstream);
-      let buffer = "";
+      let downstreamBuffer = "";
+      let upstreamBuffer = "";
+      const pendingShares = new Set<string>();
 
       const closeBoth = () => {
+        metrics.pending = Math.max(0, metrics.pending - pendingShares.size);
+        pendingShares.clear();
         this.#readyConnections.delete(connectionId);
         downstream.destroy();
         upstream.destroy();
@@ -95,21 +117,42 @@ export class StratumProxy {
       };
 
       downstream.on("data", (chunk) => {
-        buffer += chunk.toString("utf8");
-        if (Buffer.byteLength(buffer) > MAX_LINE_BYTES) return closeBoth();
+        downstreamBuffer += chunk.toString("utf8");
+        if (Buffer.byteLength(downstreamBuffer) > MAX_LINE_BYTES) return closeBoth();
         while (true) {
-          const newlineIndex = buffer.indexOf("\n");
+          const newlineIndex = downstreamBuffer.indexOf("\n");
           if (newlineIndex < 0) break;
-          const rawLine = buffer.slice(0, newlineIndex + 1);
-          buffer = buffer.slice(newlineIndex + 1);
+          const rawLine = downstreamBuffer.slice(0, newlineIndex + 1);
+          downstreamBuffer = downstreamBuffer.slice(newlineIndex + 1);
           const rewritten = rewriteClientLine(rawLine, route);
           if (rewritten.method === "mining.submit") {
+            const requestKey = parseKheavyhashSubmitRequest(rewritten.line);
+            if (requestKey && !pendingShares.has(requestKey)) {
+              pendingShares.add(requestKey);
+              metrics.pending += 1;
+            }
+            metrics.submitted += 1;
             this.#event("share-submitted", connectionId);
           }
           upstream.write(rewritten.line);
         }
       });
-      upstream.on("data", (chunk) => downstream.write(chunk));
+      upstream.on("data", (chunk) => {
+        downstream.write(chunk);
+        upstreamBuffer += chunk.toString("utf8");
+        if (Buffer.byteLength(upstreamBuffer) > MAX_LINE_BYTES) return closeBoth();
+        while (true) {
+          const newlineIndex = upstreamBuffer.indexOf("\n");
+          if (newlineIndex < 0) break;
+          const line = upstreamBuffer.slice(0, newlineIndex + 1);
+          upstreamBuffer = upstreamBuffer.slice(newlineIndex + 1);
+          const classification = classifyKheavyhashSubmitResponse(line);
+          if (!classification || !pendingShares.delete(classification.requestKey)) continue;
+          metrics.pending = Math.max(0, metrics.pending - 1);
+          metrics[classification.result] += 1;
+          this.#event(`share-${classification.result}`, connectionId);
+        }
+      });
       downstream.once("close", closeBoth);
       upstream.once("close", closeBoth);
       downstream.once("error", closeBoth);
@@ -136,5 +179,17 @@ export class StratumProxy {
       connectionId,
       detail,
     });
+  }
+
+  #newMetrics(routeId: GatewayRoute["id"]): ShareMetrics {
+    return {
+      routeId,
+      sessionStartedAt: new Date().toISOString(),
+      submitted: 0,
+      accepted: 0,
+      rejected: 0,
+      stale: 0,
+      pending: 0,
+    };
   }
 }

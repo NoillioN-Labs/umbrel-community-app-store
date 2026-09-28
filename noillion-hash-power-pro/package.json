@@ -1,6 +1,6 @@
 {
   "name": "@hash-power-pro/gateway",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "type": "module",
   "engines": {
@@ -10,6 +10,7 @@
     "start": "node --experimental-strip-types src/server.ts"
   },
   "dependencies": {
+    "@hash-power-pro/protocol-adapters": "file:./protocol-adapters",
     "@icp-sdk/core": "5.4.0"
   }
 }
