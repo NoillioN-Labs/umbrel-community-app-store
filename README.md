@@ -37,12 +37,39 @@ endorsed by Umbrel.
 
 Only the deployment files required by Umbrel are published here. Application
 source, builds, tests, logs, diagnostics, and private release artifacts remain
-outside this store. A restricted synchronization workflow copies only the
-approved runtime-file allowlist from the two package source repositories.
+outside this store. Suite deployment updates are reviewed and published directly
+here. The companion console retains its restricted allowlisted synchronization
+workflow.
 
-## Kaspa Mining Suite 2.0 — current release
+## Kaspa Mining Suite 2.0 - Current Release
 
-Version **0.6.5** improves mobile use on iPhone and other touch devices. Analytics now stays within the screen at normal zoom, controls have reliable touch areas, and navigation and block-celebration controls respond to one tap. The celebration also includes a **Disable future pop-ups** option linked to the same preference in Settings. Application version reporting now comes directly from the packaged release and is checked before publication. Mining behaviour, stored data and network ports are unchanged. The suite uses UI **5560**, miner Stratum **5556**, and Kaspa P2P **16111 → 16111**.
+Version **0.7.0-pilot.1** is an experimental KAS/ZKAS merged-mining test release.
+The existing UI **5560**, Kaspa-only Stratum **5556**, Kaspa P2P **16111** and
+stored data are retained. The opt-in pilot uses separate Stratum TCP **5557**.
+
+After installing or updating through this community store:
+
+1. Check available RAM and disk space. The new ZKAS node starts syncing on
+   installation and uses separate data and log directories with a 4 GiB memory
+   ceiling. This limit is not a guarantee of mainnet sync performance.
+2. In Settings, enter one owner's mainnet Kaspa public receive address and ZKAS
+   Orchard public receive address, plus the app password displayed by Umbrel.
+   Never enter a private key or seed phrase. The dashboard remains password-free.
+3. Enable and save the pilot. Wait for the parent Kaspa node to synchronize and
+   for the pilot to report a listening state before testing a miner.
+4. Test one miner using the pilot pool and worker username shown in Settings.
+   Keep its known-working Kaspa pool configuration for recovery. No miner is
+   redirected automatically.
+
+The pilot automatically continues Kaspa mining when ZKAS is unavailable.
+Its chain-tagged discoveries and worker statistics are session observations,
+not verified payouts or a durable ledger. Analytics and celebrations currently
+cover Kaspa-only TCP 5556. Stock ASIC compatibility and physical Umbrel lifecycle
+remain real-world test gates; this release does not claim they have passed.
+
+Startup hooks create all required directories and repair narrowly scoped legacy
+ownership for non-root services. RPC and auxiliary P2P ports are not exposed on
+the host; do not forward Stratum or RPC ports to the public internet.
 
 If upgrading from 0.6.2 or earlier, update every miner pool address to the Umbrel device on TCP **5556**. Before upgrading, stop any other app or service using TCP **16111**. The former **16121** P2P offset and **55556** Stratum port were temporary side-by-side testing allocations.
 

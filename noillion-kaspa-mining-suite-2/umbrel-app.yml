@@ -4,9 +4,18 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.6.8"
+version: "0.7.0-pilot.1"
 port: 5560
 description: >-
+  Experimental merged-mining pilot. Configure one owner's public Kaspa and ZKAS
+  Orchard receive addresses in Settings before using the optional TCP 5557
+  endpoint. It starts disabled, falls back to Kaspa when ZKAS is unavailable,
+  and protects configuration changes with the app password displayed by Umbrel.
+  It never holds wallet keys. The separate ZKAS node begins syncing after
+  installation. Pilot telemetry is session-only; verified Analytics and
+  celebrations currently cover Kaspa-only TCP 5556, not pilot discoveries.
+
+
   Turn your Umbrel into a complete Kaspa solo-mining command centre. Kaspa
   Mining Suite 2.0 brings your dedicated Kaspa node, official Stratum bridge,
   ASIC worker telemetry, live GhostDAG, hashrate history and verified reward
@@ -25,13 +34,19 @@ submitter: NoillioN Labs
 submission: ""
 dependencies: []
 path: ""
+deterministicPassword: true
 releaseNotes: >-
-  Version 0.6.8 upgrades both the Kaspa node and official Stratum Bridge to
-  Rusty Kaspa 2.1.0. The release adds P2P protocol 11 with backwards-compatible
-  chunked initial sync, stronger network and arithmetic safety checks, and
-  important bridge fixes for dashboard path traversal, lingering CLOSE_WAIT
-  sockets and unbounded mining metrics. The navigation footer now reports node
-  and bridge version 2.1.0 and application version 0.6.8.
+  Experimental 0.7.0-pilot.1 adds an opt-in KAS/ZKAS solo gateway on TCP 5557,
+  one-owner public address configuration with native checksum validation,
+  automatic Kaspa fallback and separate chain-tagged session discoveries.
+  Pilot settings require the app password displayed by Umbrel; the dashboard
+  remains password-free behind Umbrel's access controls.
+  Kaspa-only TCP 5556, UI 5560 and existing data paths are unchanged. The new
+  ZKAS node syncs into its own directory; allow additional RAM and disk space.
+  Startup hooks create and repair non-root data ownership before services run.
+  This is a real-world test release, not proof of ASIC compatibility or payouts.
+  Pilot discoveries are not yet in the durable reward ledger. Never enter keys
+  or seed phrases. No miner is redirected automatically.
 
 gallery:
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/1.png

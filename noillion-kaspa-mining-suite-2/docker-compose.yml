@@ -5,25 +5,32 @@ services:
       APP_HOST: noillion-kaspa-mining-suite-2_server_1
       APP_PORT: 8080
   server:
-    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app@sha256:145f964508188f37b0b740e3f42409b9301eee91aaf1f94611ac2c8ec4e3d96c
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app:a8fa42c86ecb0df8655c4b48df923511cddae7eb@sha256:803c55318741c9d9f6f13ac7c779f3e46693f04d71614850a5bac4808ba85f3e
     user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 2m
     environment:
-      # Password support remains available but is disabled for this community preview.
+      # Dashboard is password-free; pilot configuration still requires APP_PASSWORD.
       SUITE_AUTH_REQUIRED: "false"
       SUITE_PASSWORD: "${APP_PASSWORD}"
       KASPAD_ADDRESS: noillion-kaspa-mining-suite-2_node_1:16110
       NODE_LOG_DIR: /node-logs
+      MERGED_GATEWAY_BINARY: /usr/local/bin/merged-stratum-bridge
+      PILOT_DATA_DIR: /pilot
+      ZKAS_NODE_ADDRESS: noillion-kaspa-mining-suite-2_zkas_1:16110
+      MERGED_STRATUM_PUBLIC_PORT: "${APP_KASPA_SUITE_MERGED_STRATUM_PORT}"
       STRATUM_PUBLIC_PORT: "${APP_KASPA_SUITE_STRATUM_PORT}"
       UMBREL_HOST: "${APP_KASPA_SUITE_LAN_HOST}"
     ports:
       - "${APP_KASPA_SUITE_STRATUM_PORT}:5555"
+      - "${APP_KASPA_SUITE_MERGED_STRATUM_PORT}:5557"
     volumes:
       - ${APP_DATA_DIR}/data/suite:/data
       - ${APP_DATA_DIR}/data/node-logs:/node-logs:ro
+      - ${APP_DATA_DIR}/data/pilot:/pilot
     depends_on:
       - node
+      - zkas
     healthcheck:
       test:
         [
@@ -37,7 +44,7 @@ services:
       start_period: 30s
       retries: 3
   node:
-    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app@sha256:145f964508188f37b0b740e3f42409b9301eee91aaf1f94611ac2c8ec4e3d96c
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app:a8fa42c86ecb0df8655c4b48df923511cddae7eb@sha256:803c55318741c9d9f6f13ac7c779f3e46693f04d71614850a5bac4808ba85f3e
     user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 2m
@@ -56,4 +63,25 @@ services:
     volumes:
       - ${APP_DATA_DIR}/data/node:/data
       - ${APP_DATA_DIR}/data/node-logs:/node-logs
-
+  zkas:
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app:a8fa42c86ecb0df8655c4b48df923511cddae7eb@sha256:803c55318741c9d9f6f13ac7c779f3e46693f04d71614850a5bac4808ba85f3e
+    user: "1000:1000"
+    restart: unless-stopped
+    stop_grace_period: 2m
+    mem_limit: 4g
+    command:
+      [
+        "zkas-kaspad",
+        "--appdir=/data",
+        "--logdir=/node-logs",
+        "--rpclisten=0.0.0.0:16110",
+        "--listen=0.0.0.0:16111",
+        "--utxoindex",
+        "--disable-upnp",
+        "--ram-scale=0.3",
+        "--outpeers=8",
+        "--maxinpeers=8",
+      ]
+    volumes:
+      - ${APP_DATA_DIR}/data/zkas-node:/data
+      - ${APP_DATA_DIR}/data/zkas-logs:/node-logs

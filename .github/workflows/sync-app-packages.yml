@@ -58,6 +58,12 @@ jobs:
             noillion-kaspa-mining-suite-2/3.png \
             noillion-kaspa-mining-suite-2/4.png \
             noillion-kaspa-mining-suite-2/5.png \
+            noillion-kaspa-mining-suite-2/data/suite/.gitkeep \
+            noillion-kaspa-mining-suite-2/data/node/.gitkeep \
+            noillion-kaspa-mining-suite-2/data/node-logs/.gitkeep \
+            noillion-kaspa-mining-suite-2/data/pilot/.gitkeep \
+            noillion-kaspa-mining-suite-2/data/zkas-node/.gitkeep \
+            noillion-kaspa-mining-suite-2/data/zkas-logs/.gitkeep \
             noillion-kaspa-mining-suite-2/docker-compose.yml \
             noillion-kaspa-mining-suite-2/exports.sh \
             noillion-kaspa-mining-suite-2/hooks/pre-start \
