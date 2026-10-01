@@ -43,16 +43,22 @@ workflow.
 
 ## Kaspa Mining Suite 2.0 - Current Release
 
-Version **0.7.0-pilot.3** is an experimental KAS/ZKAS merged-mining test release.
+Version **0.7.0-pilot.4** is an experimental KAS/ZKAS merged-mining test release.
 The existing UI **5560**, Kaspa-only Stratum **5556**, Kaspa P2P **16111** and
 stored data are retained. The opt-in pilot uses separate Stratum TCP **5558**.
 
-This update adds delivered-work diagnostics in Settings: merged and Kaspa-only
-job counts, recent work mode, ZKAS template readiness and freshness, and fallback
-reasons. Missing or stale evidence is shown as unavailable. A ready template is
-not proof that merged work was sent, and sent work is not proof of a block or
-payout. Job counts are gateway-session observations, not durable accounting.
-The new runtime and Umbrel package both report **0.7.0-pilot.3**.
+This update stores observed pilot discoveries across restarts, with chain
+filters, full hashes and read-only checks against the corresponding node.
+Node visibility is not proof of reward, maturity, finality or wallet credit.
+Pilot workers now appear in Overview and Miners with source labels. ZKAS health
+shows synchronization, daemon version, peers and exact chain-progress readings.
+Missing or stale evidence is unavailable. Kaspa-only reward Analytics remains
+separate. Delivered-job counts are still gateway-session observations.
+The new runtime and Umbrel package both report **0.7.0-pilot.4**.
+
+Download a dashboard database backup before updating. This release migrates
+the database schema; an older runtime cannot open the upgraded database.
+Rollback requires a compatible pre-update backup, not deleting current data.
 
 The pilot keeps TCP **5558**, avoiding Hash Power Pro's TCP **5557**. Data paths,
 service identities and the ownership-repair hook are unchanged. Update through
@@ -77,10 +83,12 @@ After installing or updating through this community store:
    redirected automatically.
 
 The pilot automatically continues Kaspa mining when ZKAS is unavailable.
-Its chain-tagged discoveries and worker statistics are session observations,
-not verified payouts or a durable ledger. Analytics and celebrations currently
-cover Kaspa-only TCP 5556. Stock ASIC compatibility and physical Umbrel lifecycle
-remain real-world test gates; this release does not claim they have passed.
+Its saved chain-tagged discoveries are polled gateway observations, not verified
+payouts or a lossless native submission journal: a gateway crash before polling
+can lose an unobserved entry. Analytics and celebrations currently cover
+Kaspa-only TCP 5556. Mainnet block and payout acceptance, stock ASIC compatibility
+and physical Umbrel lifecycle remain real-world test gates; automated checks
+alone do not establish them.
 
 Startup hooks create all required directories and repair narrowly scoped legacy
 ownership for non-root services. RPC and auxiliary P2P ports are not exposed on

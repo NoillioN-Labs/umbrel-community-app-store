@@ -4,7 +4,7 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.7.0-pilot.3"
+version: "0.7.0-pilot.4"
 port: 5560
 description: >-
   Experimental merged-mining pilot. Configure one owner's public Kaspa and ZKAS
@@ -12,8 +12,9 @@ description: >-
   endpoint. It starts disabled, falls back to Kaspa when ZKAS is unavailable,
   and protects configuration changes with the app password displayed by Umbrel.
   It never holds wallet keys. The separate ZKAS node begins syncing after
-  installation. Pilot telemetry is session-only; verified Analytics and
-  celebrations currently cover Kaspa-only TCP 5556, not pilot discoveries.
+  installation. Observed pilot discoveries are stored across restarts, with
+  separate node-visibility checks. Visibility does not verify rewards.
+  Verified Analytics and celebrations cover Kaspa-only TCP 5556.
 
 
   Turn your Umbrel into a complete Kaspa solo-mining command centre. Kaspa
@@ -36,19 +37,19 @@ dependencies: []
 path: ""
 deterministicPassword: true
 releaseNotes: >-
-  Adds pilot work diagnostics to Settings: successfully sent merged and
-  Kaspa-only jobs, recent delivered work mode, ZKAS template readiness and
-  age, and fallback reasons. Stale or missing diagnostics show unavailable
-  rather than a current success state. Template readiness is separate from
-  work actually sent to a miner; neither proves a block or payout.
-  Miner connection details now explicitly show the public Kaspa address used
-  as the pool password, separate from the Umbrel configuration password.
-  Update through this community store; do not uninstall or delete app data.
-  Pilot TCP 5558, Kaspa-only TCP 5556, UI 5560, service identities, non-root
-  ownership hooks and all persisted data paths are unchanged.
-  The pilot remains experimental. Counts reset with gateway sessions;
-  discoveries are not yet in the durable reward ledger. No miner is redirected
-  automatically, and the app never holds wallet keys or seed phrases.
+  Adds persistent, chain-tagged pilot discovery history and read-only checks
+  of whether the corresponding node can retrieve each block. Rewards remain
+  unverified; node visibility is not proof of payout, maturity or finality.
+  Pilot workers now appear in Overview and Miners with source labels, without
+  changing Kaspa-only reward Analytics. Adds ZKAS synchronization, peer and
+  exact chain-progress readings. Missing or stale readings show unavailable.
+  Discoveries are captured by polling: a gateway crash before observation can
+  lose an entry. Delivered-job counts remain session observations.
+  Download a database backup before updating. This release upgrades the database
+  schema; rollback to an older runtime requires a compatible pre-update backup.
+  Update through this community store, not by uninstalling. Mining briefly
+  restarts; existing addresses, data paths, ports and ownership hooks remain.
+  No miner is redirected automatically. The app never holds wallet keys.
 
 gallery:
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/1.png
