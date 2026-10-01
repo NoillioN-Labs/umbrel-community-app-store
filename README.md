@@ -43,60 +43,56 @@ workflow.
 
 ## Kaspa Mining Suite 2.0 - Current Release
 
-Version **0.7.0-pilot.4** is an experimental KAS/ZKAS merged-mining test release.
-The existing UI **5560**, Kaspa-only Stratum **5556**, Kaspa P2P **16111** and
-stored data are retained. The opt-in pilot uses separate Stratum TCP **5558**.
+Version **0.8.0** supports Kaspa-only mining and optional KAS + ZKAS merged mining.
+UI **5560**, Kaspa-only Stratum **5556**, merged Stratum **5558** and Kaspa P2P
+**16111** retain their existing ports. Existing addresses, data paths, service
+identities and the scoped ownership-repair hook are preserved.
 
-This update stores observed pilot discoveries across restarts, with chain
-filters, full hashes and read-only checks against the corresponding node.
-Node visibility is not proof of reward, maturity, finality or wallet credit.
-Pilot workers now appear in Overview and Miners with source labels. ZKAS health
-shows synchronization, daemon version, peers and exact chain-progress readings.
-Missing or stale evidence is unavailable. Kaspa-only reward Analytics remains
-separate. Delivered-job counts are still gateway-session observations.
-The new runtime and Umbrel package both report **0.7.0-pilot.4**.
+This release includes both reporting sources in Overview hashrate history and
+centres the average below the graph. New fleet history starts after updating;
+earlier merged-mining samples are not reconstructed. Analytics lists saved
+KAS/ZKAS discoveries separately from Kaspa-only bridge reward charts and
+estimates. Node visibility does not establish rewards, maturity or wallet credit.
+IN peer badges are purple and OUT badges teal in both themes. Connection help
+shows the selected endpoint and the correct miner credentials.
 
-Download a dashboard database backup before updating. This release migrates
-the database schema; an older runtime cannot open the upgraded database.
-Rollback requires a compatible pre-update backup, not deleting current data.
+**Download a database backup before updating.** This release migrates to schema 8.
+An older runtime cannot open the upgraded database; rollback requires a compatible
+pre-update backup. Update through this store, without uninstalling or deleting
+app data. Mining services briefly restart during the update.
 
-The pilot keeps TCP **5558**, avoiding Hash Power Pro's TCP **5557**. Data paths,
-service identities and the ownership-repair hook are unchanged. Update through
-this community store; mining services restart briefly. Do not uninstall the
-Suite or delete app data. Existing pilot configuration and chain data are retained.
+### Kaspa-only mining
 
-After installing or updating through this community store:
+Connect ASICs to TCP **5556**, use a public KAS address followed by a dot and
+worker name as the username, and optionally use `x` as the password. No ZKAS
+address is needed. Merged mining starts disabled on a fresh installation.
+To switch an existing miner back to Kaspa-only, move its pool configuration to
+5556 first, then uncheck **Enable merged mining** in Settings and save using the
+Umbrel app password. Disabling closes 5558; miners are not redirected automatically.
+Saved addresses and discoveries remain, and the ZKAS node continues running.
 
-1. Check available RAM and disk space. The new ZKAS node starts syncing on
-   installation and uses separate data and log directories with a 4 GiB memory
-   ceiling. This limit is not a guarantee of mainnet sync performance.
-2. In Settings, enter one owner's mainnet Kaspa public receive address and ZKAS
-   Orchard public receive address, plus the app password displayed by Umbrel.
-   Never enter a private key or seed phrase. The dashboard remains password-free.
-3. Enable and save the pilot. Wait for the parent Kaspa node to synchronize and
-   for the pilot to report a listening state before testing a miner.
-4. Test one miner using the pilot pool, worker username and public Kaspa address
-   shown as the miner pool password in Settings. This is not the Umbrel app
-   configuration password. Keep payout addresses plain in Suite settings;
-   append a worker name only in the miner's wallet/worker field.
-   Keep its known-working Kaspa pool configuration for recovery. No miner is
-   redirected automatically.
+### Optional merged mining
 
-The pilot automatically continues Kaspa mining when ZKAS is unavailable.
-Its saved chain-tagged discoveries are polled gateway observations, not verified
-payouts or a lossless native submission journal: a gateway crash before polling
-can lose an unobserved entry. Analytics and celebrations currently cover
-Kaspa-only TCP 5556. Mainnet block and payout acceptance, stock ASIC compatibility
-and physical Umbrel lifecycle remain real-world test gates; automated checks
-alone do not establish them.
+Check available RAM and disk space. The separate ZKAS node has a 4 GiB memory
+ceiling; this is not a guarantee of mainnet synchronization performance.
+In Settings, save one owner's mainnet KAS and ZKAS Orchard public receive
+addresses, using the app password displayed by Umbrel. Enable merged mining and
+wait for the Kaspa node to synchronize and the gateway to report listening.
 
-Startup hooks create all required directories and repair narrowly scoped legacy
-ownership for non-root services. RPC and auxiliary P2P ports are not exposed on
-the host; do not forward Stratum or RPC ports to the public internet.
+Connect the miner to TCP **5558**, with `ZKAS-address.worker` as its username
+and the **bare public KAS address** as its required pool password. That pool
+password is not the Umbrel app password. Keep the receive addresses in app
+Settings free of worker suffixes. The dashboard remains password-free; configuration
+writes require the app password. Never enter a private key or seed phrase.
 
-If upgrading from 0.6.2 or earlier, update every miner pool address to the Umbrel device on TCP **5556**. Before upgrading, stop any other app or service using TCP **16111**. The former **16121** P2P offset and **55556** Stratum port were temporary side-by-side testing allocations.
+The gateway supports Kaspa fallback when ZKAS is unavailable. Saved discoveries
+are polled observations, not a lossless submission journal: a crash before
+polling can lose an unobserved discovery. Automatic merged-mining reward
+attribution and maturity remain unfinished. Hardware compatibility and physical
+outage/recovery testing remain separate from automated release checks.
 
-If you use router forwarding, configure external TCP **16111 → your Umbrel device's local IPv4 address, port 16111**. Forwarding is optional for outbound peer operation.
-
-The upgrade briefly restarts mining services. Existing node data, settings and ledger are retained. If startup reports that port 16111 or 5556 is already allocated, stop the conflicting application and restart the suite. Do not delete existing data to resolve a port conflict.
-
+Startup hooks create and repair only the app's declared persistent directories
+for UID/GID 1000 services. RPC and auxiliary P2P ports are not exposed on the host.
+Do not forward Stratum or RPC ports to the public internet. Optional Kaspa peer
+forwarding is external TCP **16111** to the Umbrel device's local TCP **16111**.
+If a port is already allocated, resolve the conflict without deleting app data.

@@ -5,7 +5,7 @@ services:
       APP_HOST: noillion-kaspa-mining-suite-2_server_1
       APP_PORT: 8080
   server:
-    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app:d1a7122a1348ef0b73fd18fe7990681a8f1db414@sha256:352aee2e5709508a1fe22bdb7c86537992451b3f470d642fba9f8ce4df60a6fa
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app:36c83857d07ccd538bd4393fe5823ad845e6f687@sha256:c26a210b24e52da760ecd42f7288a0918c6d7ebdaeade34c63b0c36d7969c2df
     user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 2m
@@ -44,7 +44,7 @@ services:
       start_period: 30s
       retries: 3
   node:
-    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app:d1a7122a1348ef0b73fd18fe7990681a8f1db414@sha256:352aee2e5709508a1fe22bdb7c86537992451b3f470d642fba9f8ce4df60a6fa
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app:36c83857d07ccd538bd4393fe5823ad845e6f687@sha256:c26a210b24e52da760ecd42f7288a0918c6d7ebdaeade34c63b0c36d7969c2df
     user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 2m
@@ -64,7 +64,7 @@ services:
       - ${APP_DATA_DIR}/data/node:/data
       - ${APP_DATA_DIR}/data/node-logs:/node-logs
   zkas:
-    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app:d1a7122a1348ef0b73fd18fe7990681a8f1db414@sha256:352aee2e5709508a1fe22bdb7c86537992451b3f470d642fba9f8ce4df60a6fa
+    image: ghcr.io/noillion-labs/kaspa-mining-suit-2-community-app:36c83857d07ccd538bd4393fe5823ad845e6f687@sha256:c26a210b24e52da760ecd42f7288a0918c6d7ebdaeade34c63b0c36d7969c2df
     user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 2m
