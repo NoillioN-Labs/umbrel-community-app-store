@@ -43,16 +43,21 @@ workflow.
 
 ## Kaspa Mining Suite 2.0 - Current Release
 
-Version **0.7.0-pilot.2** is an experimental KAS/ZKAS merged-mining test release.
+Version **0.7.0-pilot.3** is an experimental KAS/ZKAS merged-mining test release.
 The existing UI **5560**, Kaspa-only Stratum **5556**, Kaspa P2P **16111** and
 stored data are retained. The opt-in pilot uses separate Stratum TCP **5558**.
 
-This packaging-only update fixes the pilot's host-port conflict with Hash Power
-Pro, which retains TCP **5557**. It reuses the previously tested runtime image;
-the dashboard may still report runtime version **0.7.0-pilot.1**. The installed
-Umbrel package version is **0.7.0-pilot.2**. No image, data path or ownership hook
-changes are required. Update through this community store and restart the Suite.
-Do not uninstall it or delete app data to recover from a failed pilot.1 update.
+This update adds delivered-work diagnostics in Settings: merged and Kaspa-only
+job counts, recent work mode, ZKAS template readiness and freshness, and fallback
+reasons. Missing or stale evidence is shown as unavailable. A ready template is
+not proof that merged work was sent, and sent work is not proof of a block or
+payout. Job counts are gateway-session observations, not durable accounting.
+The new runtime and Umbrel package both report **0.7.0-pilot.3**.
+
+The pilot keeps TCP **5558**, avoiding Hash Power Pro's TCP **5557**. Data paths,
+service identities and the ownership-repair hook are unchanged. Update through
+this community store; mining services restart briefly. Do not uninstall the
+Suite or delete app data. Existing pilot configuration and chain data are retained.
 
 After installing or updating through this community store:
 
@@ -64,7 +69,10 @@ After installing or updating through this community store:
    Never enter a private key or seed phrase. The dashboard remains password-free.
 3. Enable and save the pilot. Wait for the parent Kaspa node to synchronize and
    for the pilot to report a listening state before testing a miner.
-4. Test one miner using the pilot pool and worker username shown in Settings.
+4. Test one miner using the pilot pool, worker username and public Kaspa address
+   shown as the miner pool password in Settings. This is not the Umbrel app
+   configuration password. Keep payout addresses plain in Suite settings;
+   append a worker name only in the miner's wallet/worker field.
    Keep its known-working Kaspa pool configuration for recovery. No miner is
    redirected automatically.
 
