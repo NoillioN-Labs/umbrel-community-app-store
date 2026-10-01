@@ -43,9 +43,16 @@ workflow.
 
 ## Kaspa Mining Suite 2.0 - Current Release
 
-Version **0.7.0-pilot.1** is an experimental KAS/ZKAS merged-mining test release.
+Version **0.7.0-pilot.2** is an experimental KAS/ZKAS merged-mining test release.
 The existing UI **5560**, Kaspa-only Stratum **5556**, Kaspa P2P **16111** and
-stored data are retained. The opt-in pilot uses separate Stratum TCP **5557**.
+stored data are retained. The opt-in pilot uses separate Stratum TCP **5558**.
+
+This packaging-only update fixes the pilot's host-port conflict with Hash Power
+Pro, which retains TCP **5557**. It reuses the previously tested runtime image;
+the dashboard may still report runtime version **0.7.0-pilot.1**. The installed
+Umbrel package version is **0.7.0-pilot.2**. No image, data path or ownership hook
+changes are required. Update through this community store and restart the Suite.
+Do not uninstall it or delete app data to recover from a failed pilot.1 update.
 
 After installing or updating through this community store:
 
