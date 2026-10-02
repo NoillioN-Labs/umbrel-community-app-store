@@ -4,7 +4,7 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.8.0"
+version: "0.8.1"
 port: 5560
 description: >-
   Optional KAS + ZKAS merged mining. Configure one owner's public Kaspa and ZKAS
@@ -14,8 +14,9 @@ description: >-
   It never holds wallet keys. The separate ZKAS node begins syncing after
   installation. Observed merged-mining discoveries are stored across restarts, with
   separate node-visibility checks. Visibility does not verify rewards.
-  Reward charts and celebrations cover Kaspa-only TCP 5556. Analytics also lists
-  saved merged-mining discoveries with rewards marked unverified. For Kaspa-only
+  Kaspa analytics includes discoveries and node-resolved rewards from both mining
+  modes. ZKAS discoveries are shown separately; ZKAS rewards remain unverified.
+  Celebrations cover the Kaspa-only bridge. For Kaspa-only
   mining, leave merged mining disabled and connect ASICs to TCP 5556 using a
   public KAS address and worker name. Disabling merged mining closes TCP 5558;
   ASICs must be moved to TCP 5556 manually. Saved addresses and discoveries remain.
@@ -41,21 +42,20 @@ dependencies: []
 path: ""
 deterministicPassword: true
 releaseNotes: >-
-  Version 0.8.0 removes the Pilot label and clarifies optional merged mining
-  and Kaspa-only operation. Fixes Overview history to include both reporting
-  sources, with the average centred below the chart. New fleet history starts
-  after updating; prior merged-mining history is not reconstructed.
-  Analytics shows saved KAS and ZKAS discoveries separately from Kaspa-only
-  bridge rewards and estimates. Merged-mining rewards remain unverified.
-  Connection help now shows the selected mining endpoint and required address
-  pair. IN badges are purple and OUT badges teal in both themes.
-  Discoveries are captured by polling: a gateway crash before observation can
-  lose an entry. Delivered-job counts remain session observations.
-  Download a database backup before updating. This release upgrades the database
-  schema; rollback to an older runtime requires a compatible pre-update backup.
-  Update through this community store, not by uninstalling. Mining briefly
-  restarts; existing addresses, data paths, ports and ownership hooks remain.
-  No miner is redirected automatically. The app never holds wallet keys.
+  Version 0.8.1 fixes analytics for merged mining. Overview now shows separate
+  KAS and ZKAS discoveries in the last 24 hours. Kaspa reward analytics includes
+  both mining modes, counts each hash once and automatically checks saved merged
+  KAS discoveries with the local node. The Kaspa outlook includes fresh merged
+  hashrate. Analytics adds period-based KAS and ZKAS cards and discovery filtering.
+  Unresolved rewards are distinguished from zero rewards. Long-period charts
+  include the complete saved ledger. ZKAS rewards remain unverified; node
+  visibility and block rewards do not establish spendable wallet credit.
+  Saved historical hashes can be checked, but missed or session-only discoveries
+  cannot be reconstructed and some historical node queries may remain unresolved.
+  Download a database backup before updating. Schema 8, existing data paths,
+  addresses, ports and ownership hooks are preserved. Update through this store
+  without uninstalling. Mining services briefly restart during the update.
+
 
 gallery:
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/1.png

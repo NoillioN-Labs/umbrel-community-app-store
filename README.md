@@ -43,23 +43,28 @@ workflow.
 
 ## Kaspa Mining Suite 2.0 - Current Release
 
-Version **0.8.0** supports Kaspa-only mining and optional KAS + ZKAS merged mining.
+Version **0.8.1** supports Kaspa-only mining and optional KAS + ZKAS merged mining.
 UI **5560**, Kaspa-only Stratum **5556**, merged Stratum **5558** and Kaspa P2P
 **16111** retain their existing ports. Existing addresses, data paths, service
 identities and the scoped ownership-repair hook are preserved.
 
-This release includes both reporting sources in Overview hashrate history and
-centres the average below the graph. New fleet history starts after updating;
-earlier merged-mining samples are not reconstructed. Analytics lists saved
-KAS/ZKAS discoveries separately from Kaspa-only bridge reward charts and
-estimates. Node visibility does not establish rewards, maturity or wallet credit.
-IN peer badges are purple and OUT badges teal in both themes. Connection help
-shows the selected endpoint and the correct miner credentials.
+Overview now shows separate KAS and ZKAS discoveries for the last 24 hours.
+Kaspa analytics includes both mining modes, with unique-hash counts, node-resolved
+rewards, block outcomes and a hashrate-based outlook. Saved merged KAS hashes are
+checked automatically after updating; no new discovery is needed to start those
+checks. Analytics also shows ZKAS discoveries and node-check coverage for the
+selected period. Unresolved rewards are distinguished from zero rewards.
 
-**Download a database backup before updating.** This release migrates to schema 8.
-An older runtime cannot open the upgraded database; rollback requires a compatible
-pre-update backup. Update through this store, without uninstalling or deleting
-app data. Mining services briefly restart during the update.
+ZKAS rewards remain unverified. Node visibility and block rewards do not establish
+wallet credit or spendable funds. Missed or earlier session-only discoveries cannot
+be reconstructed; some old hashes may remain unresolved by the node. Gateway
+polling can miss discoveries if it crashes before an observation is saved.
+
+**Download a database backup before updating.** Schema 8 is retained from 0.8.0;
+existing saved data is preserved. Versions older than 0.8.0 cannot open schema 8,
+so rollback to those versions requires a compatible pre-update backup. Update
+through this store without uninstalling or deleting app data. Mining services
+briefly restart during the update.
 
 ### Kaspa-only mining
 
@@ -87,8 +92,8 @@ writes require the app password. Never enter a private key or seed phrase.
 
 The gateway supports Kaspa fallback when ZKAS is unavailable. Saved discoveries
 are polled observations, not a lossless submission journal: a crash before
-polling can lose an unobserved discovery. Automatic merged-mining reward
-attribution and maturity remain unfinished. Hardware compatibility and physical
+polling can lose an unobserved discovery. Automatic ZKAS reward
+attribution and wallet maturity remain unfinished. Hardware compatibility and physical
 outage/recovery testing remain separate from automated release checks.
 
 Startup hooks create and repair only the app's declared persistent directories
