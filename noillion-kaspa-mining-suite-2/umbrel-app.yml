@@ -4,7 +4,7 @@ name: Kaspa Mining Suite 2.0
 tagline: Your node, your miners, a live view of Kaspa
 icon: https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/icon.svg
 category: crypto
-version: "0.8.1"
+version: "0.8.2"
 port: 5560
 description: >-
   Optional KAS + ZKAS merged mining. Configure one owner's public Kaspa and ZKAS
@@ -42,20 +42,18 @@ dependencies: []
 path: ""
 deterministicPassword: true
 releaseNotes: >-
-  Version 0.8.1 fixes analytics for merged mining. Overview now shows separate
-  KAS and ZKAS discoveries in the last 24 hours. Kaspa reward analytics includes
-  both mining modes, counts each hash once and automatically checks saved merged
-  KAS discoveries with the local node. The Kaspa outlook includes fresh merged
-  hashrate. Analytics adds period-based KAS and ZKAS cards and discovery filtering.
-  Unresolved rewards are distinguished from zero rewards. Long-period charts
-  include the complete saved ledger. ZKAS rewards remain unverified; node
-  visibility and block rewards do not establish spendable wallet credit.
-  Saved historical hashes can be checked, but missed or session-only discoveries
-  cannot be reconstructed and some historical node queries may remain unresolved.
-  Download a database backup before updating. Schema 8, existing data paths,
-  addresses, ports and ownership hooks are preserved. Update through this store
-  without uninstalling. Mining services briefly restart during the update.
-
+  Version 0.8.2 updates the ZKAS node and merged gateway for the mandatory
+  ZKAS security fork and its bound merge-mining proofs. It fixes worker telemetry
+  disappearing after 10,000 recorded discoveries and calculates merged hashrate
+  from recent accepted work instead of the worker's lifetime average.
+  Missing merged telemetry is shown as unavailable; incomplete fleet data no
+  longer produces a misleading Kaspa forecast. Difficulty and rejected-share
+  reporting are corrected. ZKAS rewards remain unverified and are not wallet credit.
+  Existing discovery history, payout addresses, mining ports and database schema 8
+  are preserved. Historical hashrate samples are retained and cannot be recalculated.
+  Download a database backup before updating in place without uninstalling.
+  Mining services briefly restart during the update; ZKAS may need to catch up
+  with its network before merged work resumes.
 
 gallery:
   - https://raw.githubusercontent.com/NoillioN-Labs/umbrel-community-app-store/main/noillion-kaspa-mining-suite-2/1.png

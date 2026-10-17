@@ -43,12 +43,19 @@ workflow.
 
 ## Kaspa Mining Suite 2.0 - Current Release
 
-Version **0.8.1** supports Kaspa-only mining and optional KAS + ZKAS merged mining.
+Version **0.8.2** supports Kaspa-only mining and optional KAS + ZKAS merged mining.
 UI **5560**, Kaspa-only Stratum **5556**, merged Stratum **5558** and Kaspa P2P
 **16111** retain their existing ports. Existing addresses, data paths, service
 identities and the scoped ownership-repair hook are preserved.
 
-Overview now shows separate KAS and ZKAS discoveries for the last 24 hours.
+This release updates the ZKAS node and merged gateway for the mandatory security
+fork. It restores telemetry after large discovery histories and estimates merged
+hashrate from recent accepted work instead of lifetime averages. Missing merged
+telemetry is unavailable rather than zero; incomplete fleet data does not produce
+a misleading Kaspa forecast. Historical samples are retained without fabricated
+backfill. Allow the ZKAS node to catch up after updating.
+
+Overview shows separate KAS and ZKAS discoveries for the last 24 hours.
 Kaspa analytics includes both mining modes, with unique-hash counts, node-resolved
 rewards, block outcomes and a hashrate-based outlook. Saved merged KAS hashes are
 checked automatically after updating; no new discovery is needed to start those
