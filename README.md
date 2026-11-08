@@ -43,24 +43,20 @@ workflow.
 
 ## Kaspa Mining Suite 2.0 - Current Release
 
-Version **0.8.2** supports Kaspa-only mining and optional KAS + ZKAS merged mining.
+Version **0.8.3** supports Kaspa-only mining and optional KAS + ZKAS merged mining.
 UI **5560**, Kaspa-only Stratum **5556**, merged Stratum **5558** and Kaspa P2P
 **16111** retain their existing ports. Existing addresses, data paths, service
 identities and the scoped ownership-repair hook are preserved.
 
-This release updates the ZKAS node and merged gateway for the mandatory security
-fork. It restores telemetry after large discovery histories and estimates merged
-hashrate from recent accepted work instead of lifetime averages. Missing merged
-telemetry is unavailable rather than zero; incomplete fleet data does not produce
-a misleading Kaspa forecast. Historical samples are retained without fabricated
-backfill. Allow the ZKAS node to catch up after updating.
+Use the sidebar to switch between the teal Kaspa and violet ZKAS workspaces.
+Overview, Analytics and Node follow the selected network. Miners & workers,
+Settings and Live logs are shared. The shared Miners & workers page includes
+connection instructions for both mining modes.
 
-Overview shows separate KAS and ZKAS discoveries for the last 24 hours.
-Kaspa analytics includes both mining modes, with unique-hash counts, node-resolved
-rewards, block outcomes and a hashrate-based outlook. Saved merged KAS hashes are
-checked automatically after updating; no new discovery is needed to start those
-checks. Analytics also shows ZKAS discoveries and node-check coverage for the
-selected period. Unresolved rewards are distinguished from zero rewards.
+Kaspa Analytics includes both mining modes, with unique-hash counts, node-resolved
+rewards, block outcomes and a hashrate-based outlook. ZKAS Analytics shows saved
+discoveries and node-check status for the selected period. This release uses the
+same node and bridge binaries as 0.8.2.
 
 ZKAS rewards remain unverified. Node visibility and block rewards do not establish
 wallet credit or spendable funds. Missed or earlier session-only discoveries cannot
